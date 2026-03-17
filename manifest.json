@@ -1,0 +1,15 @@
+{
+  "name": "Adivina el Código Deluxe",
+  "short_name": "El Código",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f3f4f6",
+  "theme_color": "#4338ca",
+  "icons": [
+    {
+      "src": "icono.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
