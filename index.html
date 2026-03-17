@@ -24,20 +24,25 @@
         }
 
         body { font-family: 'Poppins', sans-serif; background-color: var(--bg-body); color: var(--text-main); text-align: center; margin: 0; padding: 20px; min-height: 100vh; box-sizing: border-box; }
-        .contenedor-principal { max-width: 1000px; margin: 0 auto; }
-        h1 { font-size: 32px; font-weight: 700; letter-spacing: -1px; margin-bottom: 20px; text-transform: uppercase; }
+        .contenedor-principal { max-width: 800px; margin: 0 auto; }
+        h1 { font-size: 28px; font-weight: 700; letter-spacing: -1px; margin-bottom: 20px; text-transform: uppercase; }
         h2, h3 { font-weight: 600; margin-top: 0; margin-bottom: 10px; }
-        .tarjeta { background: var(--bg-card); padding: 30px; border-radius: 16px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-color); max-width: 500px; margin: 0 auto; margin-bottom: 20px; }
+        .tarjeta { background: var(--bg-card); padding: 25px; border-radius: 16px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-color); max-width: 500px; margin: 0 auto; margin-bottom: 20px; }
         .oculto { display: none !important; }
         
-        #pantalla-juego { display: flex; justify-content: space-between; align-items: flex-start; gap: 20px; }
-        .panel-lateral { flex: 1; background: var(--bg-card); padding: 20px; border-radius: 16px; min-width: 150px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-color); }
-        .panel-central { flex: 2; background: var(--bg-card); padding: 25px; border-radius: 16px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-color); }
-
-        .contenedor-rayas { display: flex; gap: 8px; justify-content: center; margin-top: 15px; flex-wrap: wrap; }
-        .slot-box { width: 32px; height: 42px; background: var(--bg-body); border-radius: 6px; font-size: 22px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); transition: all 0.3s; }
+        #pantalla-juego { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto;}
         
-        /* Animación para cuando se descubre un número */
+        .marcador-superior { display: flex; justify-content: space-between; width: 100%; gap: 10px; }
+        .panel-jugador { flex: 1; background: var(--bg-card); padding: 15px 10px; border-radius: 12px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-color); min-width: 0;}
+        .panel-jugador.j1 { border-top: 4px solid var(--p1-color); }
+        .panel-jugador.j2 { border-top: 4px solid var(--p2-color); }
+        .panel-jugador h3 { font-size: 15px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .panel-central { width: 100%; background: var(--bg-card); padding: 25px 20px; border-radius: 16px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-color); box-sizing: border-box;}
+
+        .contenedor-rayas { display: flex; gap: 4px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
+        .slot-box { width: 24px; height: 34px; background: var(--bg-body); border-radius: 6px; font-size: 18px; font-weight: 600; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); transition: all 0.3s; }
+        
         @keyframes pop {
             0% { transform: scale(1); background-color: #d1fae5; }
             50% { transform: scale(1.3); background-color: #34d399; color: white;}
@@ -45,7 +50,7 @@
         }
         .animacion-pop { animation: pop 0.6s ease; }
 
-        input[type="number"], input[type="password"], input[type="text"], select { padding: 12px; margin: 10px 0; font-size: 16px; border-radius: 8px; text-align: center; font-family: 'Poppins', sans-serif; background: var(--bg-body); border: 1px solid var(--border-color); width: 100%; max-width: 250px; box-sizing: border-box; }
+        input[type="number"], input[type="text"], select { padding: 12px; margin: 10px 0; font-size: 16px; border-radius: 8px; text-align: center; font-family: 'Poppins', sans-serif; background: var(--bg-body); border: 1px solid var(--border-color); width: 100%; max-width: 250px; box-sizing: border-box; letter-spacing: 2px; font-weight: bold;}
         input:focus, select:focus { outline: none; border-color: var(--text-main); }
         .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; font-size: 14px; color: var(--text-muted); }
         .checkbox-container input { width: auto; margin: 0; cursor: pointer; }
@@ -57,7 +62,7 @@
         .btn-revancha { background-color: #10b981; margin-bottom: 10px;}
         .btn-revancha:hover { background-color: #059669; }
 
-        .historial { background-color: var(--bg-body); border-radius: 8px; padding: 15px; height: 220px; overflow-y: auto; text-align: left; margin-top: 20px; font-size: 14px; border: 1px solid var(--border-color); }
+        .historial { background-color: var(--bg-body); border-radius: 8px; padding: 15px; height: 200px; overflow-y: auto; text-align: left; margin-top: 20px; font-size: 13px; border: 1px solid var(--border-color); }
         .mensaje-sistema { color: var(--text-muted); font-style: italic; text-align: center; margin: 10px 0; font-size: 13px;}
         .turno-j1 { color: var(--p1-color); font-weight: 600; }
         .turno-j2 { color: var(--p2-color); font-weight: 600; }
@@ -66,7 +71,13 @@
         .codigo-sala { font-family: 'Courier New', Courier, monospace; font-size: 24px; font-weight: bold; color: var(--p1-color); background: #e0e7ff; padding: 10px; border-radius: 8px; display: inline-block; letter-spacing: 2px; }
         hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
 
-        @media (max-width: 768px) { #pantalla-juego { flex-direction: column; align-items: center; } .panel-lateral, .panel-central { width: 100%; box-sizing: border-box; margin-bottom: 15px; } }
+        /* Ajustes extra para celulares para que quepan 9 números cómodamente */
+        @media (max-width: 400px) {
+            .slot-box { width: 18px; height: 26px; font-size: 14px; }
+            .contenedor-rayas { gap: 2px; }
+            h1 { font-size: 24px; }
+            .panel-jugador h3 { font-size: 13px; }
+        }
     </style>
 <meta name="theme-color" content="#f3f4f6">
     <meta name="mobile-web-app-capable" content="yes">
@@ -82,7 +93,7 @@
 
     <div id="pantalla-inicio" class="tarjeta">
         <label style="font-weight: 600;">¿Cuál es tu nombre?</label><br>
-        <input type="text" id="input-nombre" placeholder="Escribe tu nombre">
+        <input type="text" id="input-nombre" placeholder="Escribe tu nombre" autocomplete="off">
         <hr>
         <p style="color: var(--text-muted); font-size: 14px;">¿Qué deseas hacer?</p>
         <button onclick="mostrarHost()" style="background-color: var(--p1-color);">Crear Sala (Host)</button>
@@ -99,6 +110,9 @@
             <option value="4">4 Números</option>
             <option value="5">5 Números</option>
             <option value="6">6 Números</option>
+            <option value="7">7 Números</option>
+            <option value="8">8 Números</option>
+            <option value="9">9 Números</option>
         </select>
         
         <div class="checkbox-container">
@@ -108,7 +122,7 @@
         
         <br>
         <label>Tu Código Secreto:</label><br>
-        <input type="password" id="host-secreto" placeholder="Ej. 1234">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="host-secreto" placeholder="Ingresa tus números" autocomplete="off">
         <p id="error-host" class="alerta"></p>
 
         <button id="btn-esperar" onclick="hostEsperarJugador()" disabled>Esperando a tu rival...</button>
@@ -119,7 +133,7 @@
         
         <div id="guest-paso1">
             <label>Código de la Sala:</label><br>
-            <input type="text" id="guest-codigo-sala" placeholder="Ej. ABCD" style="text-transform: uppercase;">
+            <input type="text" id="guest-codigo-sala" placeholder="Ej. ABCD" style="text-transform: uppercase;" autocomplete="off">
             <p id="error-guest-conexion" class="alerta"></p>
             <button onclick="guestConectar()">Conectar</button>
         </div>
@@ -128,23 +142,30 @@
             <p style="color: var(--p2-color); font-weight: bold;">¡Conectado con <span id="nombre-rival-guest"></span>!</p>
             <p style="font-size: 14px; color: var(--text-muted);">Jugaremos con <span id="guest-mostrar-longitud" style="font-weight: bold;"></span> números.<br><span id="guest-regla-texto"></span></p>
             <label>Tu Código Secreto:</label><br>
-            <input type="password" id="guest-secreto" placeholder="Ej. 5678">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ingresa tus números" autocomplete="off">
             <p id="error-guest-juego" class="alerta"></p>
             <button onclick="guestEnviarSecreto()">¡Listo para Jugar!</button>
         </div>
     </div>
 
     <div id="pantalla-juego" class="oculto">
-        <div class="panel-lateral" style="border-top: 4px solid var(--p1-color);">
-            <h3 id="ui-nombre-j1" style="color: var(--p1-color);">Jugador 1</h3>
-            <div id="rayas-j1" class="contenedor-rayas"></div>
+        
+        <div class="marcador-superior">
+            <div class="panel-jugador j1">
+                <h3 id="ui-nombre-j1" style="color: var(--p1-color);">Jugador 1</h3>
+                <div id="rayas-j1" class="contenedor-rayas"></div>
+            </div>
+            <div class="panel-jugador j2">
+                <h3 id="ui-nombre-j2" style="color: var(--p2-color);">Jugador 2</h3>
+                <div id="rayas-j2" class="contenedor-rayas"></div>
+            </div>
         </div>
 
         <div class="panel-central">
-            <h2 id="titulo-turno">Turno del Jugador</h2>
+            <h2 id="titulo-turno" style="font-size: 20px;">Turno del Jugador</h2>
             <p id="mensaje-estado" style="color: var(--text-muted); font-size: 14px;">Ingresa <span id="mostrar-longitud-juego" style="font-weight: 600;"></span> números:</p>
             
-            <input type="number" id="intento" placeholder="Tu intento...">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="intento" placeholder="Tu intento..." autocomplete="off">
             <br>
             <button id="btn-adivinar" onclick="enviarIntento()">Adivinar</button>
             <p id="error-juego" class="alerta"></p>
@@ -157,24 +178,26 @@
             </div>
         </div>
 
-        <div class="panel-lateral" style="border-top: 4px solid var(--p2-color);">
-            <h3 id="ui-nombre-j2" style="color: var(--p2-color);">Jugador 2</h3>
-            <div id="rayas-j2" class="contenedor-rayas"></div>
-        </div>
     </div>
 
 </div>
 
 <script>
+    window.addEventListener('beforeunload', function (e) {
+        if (miRol !== 0 && document.getElementById('pantalla-juego').classList.contains('oculto') === false) {
+            e.preventDefault();
+            e.returnValue = '¿Seguro que quieres salir? Se perderá la partida actual.';
+        }
+    });
+
     let peer = null; let conn = null;
-    let miRol = 0; // 1 = Host, 2 = Guest
+    let miRol = 0; 
     let miNombre = "Jugador"; let nombreRival = "Rival";
     let miSecreto = ""; let secretoRival = "";
     let longitudJuego = 4; let turnoActual = 1;
     let reglaUnicos = true;
     let descubiertoJ1 = []; let descubiertoJ2 = [];
 
-    // --- SISTEMA DE SONIDO ---
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx;
     function reproducirSonido(tipo) {
@@ -205,7 +228,6 @@
         } catch(e) { console.log("Sonido bloqueado por el navegador"); }
     }
 
-    // --- FUNCIONES UTILIDAD ---
     function tieneRepetidos(str) { return new Set(str).size !== str.length; }
 
     function validarCodigo(codigo, longitud, unicos, idError) {
@@ -215,7 +237,6 @@
         err.innerText = ""; return true;
     }
 
-    // --- NAVEGACIÓN INICIAL ---
     function guardarNombre() {
         let input = document.getElementById('input-nombre').value.trim();
         if(input !== "") miNombre = input;
@@ -233,12 +254,14 @@
         document.getElementById('pantalla-inicio').classList.add('oculto');
         document.getElementById('pantalla-guest').classList.remove('oculto');
         peer = new Peer();
+        peer.on('disconnected', function() { peer.reconnect(); });
     }
 
-    // --- LÓGICA HOST ---
     function inicializarPeerHost() {
         let codigoRoom = Math.random().toString(36).substring(2, 6).toUpperCase();
         peer = new Peer('sala-' + codigoRoom);
+
+        peer.on('disconnected', function() { peer.reconnect(); });
 
         peer.on('open', function(id) { document.getElementById('mostrar-codigo').innerText = codigoRoom; });
 
@@ -263,7 +286,6 @@
         document.getElementById('btn-esperar').disabled = true;
     }
 
-    // --- LÓGICA GUEST ---
     function guestConectar() {
         let codigo = document.getElementById('guest-codigo-sala').value.toUpperCase();
         if (codigo === "") return;
@@ -282,7 +304,6 @@
         document.getElementById('guest-paso2').innerHTML = "<p>Esperando al Host...</p>";
     }
 
-    // --- MENSAJERÍA COMPARTIDA ---
     function configurarMensajesComunes() {
         conn.on('data', function(datos) {
             if (datos.tipo === 'INIT' && miRol === 2) {
@@ -306,20 +327,18 @@
             else if (datos.tipo === 'GUESS') { procesarIntento(datos.intento, (miRol === 1 ? 2 : 1)); }
             else if (datos.tipo === 'REMATCH_REQ') { 
                 prepararRevancha();
-                if(miRol === 1) hostEsperarJugador(); // Vuelve a mandar INIT automático
+                if(miRol === 1) hostEsperarJugador();
             }
         });
     }
 
-    // --- LÓGICA DE JUEGO Y TABLERO ---
     function iniciarTablero() {
         document.getElementById('pantalla-host').classList.add('oculto');
         document.getElementById('pantalla-guest').classList.add('oculto');
         document.getElementById('zona-revancha').classList.add('oculto');
-        document.getElementById('historial').innerHTML = ''; // Limpiar historial
+        document.getElementById('historial').innerHTML = ''; 
         document.getElementById('pantalla-juego').classList.remove('oculto');
 
-        // Poner nombres en UI
         document.getElementById('ui-nombre-j1').innerText = (miRol === 1) ? miNombre + " (Tú)" : nombreRival;
         document.getElementById('ui-nombre-j2').innerText = (miRol === 2) ? miNombre + " (Tú)" : nombreRival;
 
@@ -352,7 +371,7 @@
         input.value = ""; document.getElementById('error-juego').innerText = "";
 
         if (turnoActual === miRol) {
-            reproducirSonido('turno'); // Sonido al recibir el turno
+            reproducirSonido('turno'); 
             titulo.innerText = "¡Es tu turno!";
             titulo.style.color = miRol === 1 ? "var(--p1-color)" : "var(--p2-color)";
             input.disabled = false; boton.disabled = false; input.focus();
@@ -381,7 +400,7 @@
 
         for (let i = 0; i < longitudJuego; i++) {
             if (intentoStr[i] === codigoAComparar[i]) {
-                if (arrayDestino[i] === '') indexAnimado = i; // Solo animar si es nuevo
+                if (arrayDestino[i] === '') indexAnimado = i; 
                 arrayDestino[i] = intentoStr[i];
                 aciertos++;
             }
@@ -391,7 +410,6 @@
         let claseColor = esJ1 ? "turno-j1" : "turno-j2";
         let nombre = (quienHizoElIntento === miRol) ? "Tú: " : nombreRival + ": ";
         
-        // Emojis visuales para historial
         let emojiAciertos = aciertos > 0 ? "🟢".repeat(aciertos) : "❌";
         let mensaje = `<b>${nombre}</b> ${intentoStr} ➔ ${emojiAciertos}`;
 
@@ -418,7 +436,7 @@
         if (ganador === miRol) {
             document.getElementById('titulo-turno').innerText = "¡GANASTE! 🎉";
             document.getElementById('titulo-turno').style.color = "#10b981";
-            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); // Lluvia de confeti
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); 
         } else {
             document.getElementById('titulo-turno').innerText = "Ganó " + nombreRival + " 😔";
             document.getElementById('titulo-turno').style.color = "#dc2626";
@@ -434,18 +452,16 @@
         historial.scrollTop = historial.scrollHeight;
     }
 
-    // --- SISTEMA DE REVANCHA ---
     function solicitarRevancha() {
         conn.send({ tipo: 'REMATCH_REQ' });
         prepararRevancha();
-        if(miRol === 1) hostEsperarJugador(); // Host vuelve a mandar la config
+        if(miRol === 1) hostEsperarJugador(); 
     }
 
     function prepararRevancha() {
         document.getElementById('pantalla-juego').classList.add('oculto');
         document.getElementById('historial').innerHTML = '';
         
-        // Reutilizar pantallas de config pero limpiar los inputs secretos
         if (miRol === 1) {
             document.getElementById('pantalla-host').classList.remove('oculto');
             document.getElementById('host-secreto').value = "";
@@ -457,13 +473,15 @@
             document.getElementById('guest-paso2').innerHTML = `
                 <p style="color: var(--p2-color); font-weight: bold;">¡Revancha aceptada!</p>
                 <label>Tu NUEVO Código Secreto:</label><br>
-                <input type="password" id="guest-secreto" placeholder="Ej. 5678">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ingresa tus números" autocomplete="off" style="letter-spacing: 2px; font-weight: bold;">
                 <p id="error-guest-juego" class="alerta"></p>
                 <button onclick="guestEnviarSecreto()">¡Listo para Jugar!</button>
             `;
         }
     }
-    </script> <script>
+</script>
+
+<script>
     if ('serviceWorker' in navigator) {
         window.addEventListener('load', function() {
             navigator.serviceWorker.register('./sw.js')
