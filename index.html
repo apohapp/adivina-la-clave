@@ -131,7 +131,7 @@
             max-width: 250px;
         }
         button:hover { background-color: var(--btn-hover); }
-        button:disabled { background-color: #ccc; cursor: not-allowed; }
+        button:disabled { background-color: #ccc; cursor: not-allowed; color: #666; }
 
         .historial {
             background-color: var(--bg-body);
@@ -200,7 +200,7 @@
         <input type="password" id="host-secreto" placeholder="Ej. 1234">
         <p id="error-host" class="alerta"></p>
 
-        <button id="btn-esperar" onclick="hostEsperarJugador()" disabled>Esperando conexión...</button>
+        <button id="btn-esperar" onclick="hostEsperarJugador()" disabled>Esperando conexión del Jugador 2...</button>
     </div>
 
     <div id="pantalla-guest" class="tarjeta oculto">
@@ -239,6 +239,8 @@
             <p id="error-juego" class="alerta"></p>
 
             <div class="historial" id="historial"></div>
+            
+            <button onclick="location.reload()" style="background-color: white; color: var(--text-main); border: 1px solid var(--border-color); margin-top: 20px;">Salir y Crear Nueva Sala</button>
         </div>
 
         <div class="panel-lateral" style="border-top: 4px solid var(--p2-color);">
@@ -250,7 +252,6 @@
 </div>
 
 <script>
-    // Variables Globales
     let peer = null;
     let conn = null;
     let miRol = 0; // 1 = Host, 2 = Guest
@@ -261,7 +262,6 @@
     let descubiertoJ1 = []; 
     let descubiertoJ2 = [];
 
-    // --- FUNCIONES DE MENÚ ---
     function mostrarHost() {
         miRol = 1;
         document.getElementById('menu-principal').classList.add('oculto');
@@ -273,17 +273,22 @@
         miRol = 2;
         document.getElementById('menu-principal').classList.add('oculto');
         document.getElementById('pantalla-guest').classList.remove('oculto');
-        // Inicializamos un peer sin ID específico para el invitado
+        // Inicializar peer vacío para el invitado
         peer = new Peer();
     }
 
-    // --- LÓGICA DEL JUGADOR 1 (HOST) ---
+    // --- LÓGICA HOST ---
     function inicializarPeerHost() {
-        // Generar un código aleatorio de 4 letras/números
         let codigoRoom = Math.random().toString(36).substring(2, 6).toUpperCase();
-        document.getElementById('mostrar-codigo').innerText = codigoRoom;
+        document.getElementById('mostrar-codigo').innerText = "Creando sala...";
         
-        peer = new Peer('código-' + codigoRoom);
+        // CORRECCIÓN: Quitamos la tilde, usamos 'sala-' en vez de 'código-'
+        peer = new Peer('sala-' + codigoRoom);
+
+        // CORRECCIÓN: Solo mostramos el código cuando el servidor nos confirme que la sala existe
+        peer.on('open', function(id) {
+            document.getElementById('mostrar-codigo').innerText = codigoRoom;
+        });
 
         peer.on('connection', function(conexionEntrante) {
             conn = conexionEntrante;
@@ -291,6 +296,12 @@
             document.getElementById('btn-esperar').innerText = "¡Jugador 2 conectado! Iniciar Juego";
             document.getElementById('btn-esperar').disabled = false;
             document.getElementById('btn-esperar').style.backgroundColor = "var(--p1-color)";
+            document.getElementById('btn-esperar').style.color = "white";
+        });
+
+        peer.on('error', function(err) {
+            document.getElementById('mostrar-codigo').innerText = "Error";
+            document.getElementById('error-host').innerText = "Error al conectar al servidor. Recarga la página.";
         });
     }
 
@@ -303,7 +314,6 @@
             return;
         }
 
-        // Enviar la configuración al invitado
         conn.send({ tipo: 'INIT', longitud: longitudJuego });
         document.getElementById('btn-esperar').innerText = "Esperando que J2 elija su código...";
         document.getElementById('btn-esperar').disabled = true;
@@ -312,11 +322,8 @@
     function configurarMensajesHost() {
         conn.on('data', function(datos) {
             if (datos.tipo === 'SECRET') {
-                // El invitado envió su secreto
                 secretoRival = datos.secreto;
-                // Decidir quién empieza al azar
                 turnoActual = Math.random() < 0.5 ? 1 : 2;
-                // Avisarle al invitado que empiece
                 conn.send({ tipo: 'START', turno: turnoActual, secretoHost: miSecreto });
                 iniciarTablero();
             } else if (datos.tipo === 'GUESS') {
@@ -325,21 +332,25 @@
         });
     }
 
-    // --- LÓGICA DEL JUGADOR 2 (GUEST) ---
+    // --- LÓGICA GUEST ---
     function guestConectar() {
         let codigo = document.getElementById('guest-codigo-sala').value.toUpperCase();
         if (codigo === "") return;
 
         document.getElementById('error-guest-conexion').innerText = "Conectando...";
-        conn = peer.connect('código-' + codigo);
+        document.getElementById('error-guest-conexion').style.color = "var(--text-main)";
+        
+        // CORRECCIÓN: Quitamos la tilde aquí también para que coincida
+        conn = peer.connect('sala-' + codigo);
 
         conn.on('open', function() {
             document.getElementById('error-guest-conexion').innerText = "";
             configurarMensajesGuest();
         });
 
-        conn.on('error', function() {
-            document.getElementById('error-guest-conexion').innerText = "No se encontró la sala.";
+        peer.on('error', function(err) {
+            document.getElementById('error-guest-conexion').innerText = "No se encontró la sala o el código es incorrecto.";
+            document.getElementById('error-guest-conexion').style.color = "#dc2626";
         });
     }
 
@@ -370,7 +381,7 @@
         document.getElementById('guest-paso2').innerHTML = "<p>Esperando al Jugador 1...</p>";
     }
 
-    // --- LÓGICA COMPARTIDA DEL JUEGO ---
+    // --- LÓGICA COMPARTIDA ---
     function iniciarTablero() {
         document.getElementById('pantalla-host').classList.add('oculto');
         document.getElementById('pantalla-guest').classList.add('oculto');
@@ -431,14 +442,10 @@
             return;
         }
 
-        // Procesar en mi pantalla
         procesarIntento(intento, miRol);
-        
-        // Enviar por internet al rival
         conn.send({ tipo: 'GUESS', intento: intento });
     }
 
-    // QuiénHizoElIntento es 1 o 2
     function procesarIntento(intentoStr, quienHizoElIntento) {
         let aciertos = 0;
         let codigoAComparar = (quienHizoElIntento === miRol) ? secretoRival : miSecreto;
@@ -483,7 +490,6 @@
 
         agregarAlHistorial(mensaje, claseColor);
 
-        // Cambiar de turno y actualizar interfaz
         turnoActual = (turnoActual === 1) ? 2 : 1;
         actualizarTurnoUI();
     }
