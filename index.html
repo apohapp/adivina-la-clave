@@ -4,8 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Adivina el Código - Deluxe</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     
+    <meta name="theme-color" content="#f3f4f6">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="El Código">
+    <link rel="manifest" href="manifest.json">
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     
@@ -71,7 +78,6 @@
         .codigo-sala { font-family: 'Courier New', Courier, monospace; font-size: 24px; font-weight: bold; color: var(--p1-color); background: #e0e7ff; padding: 10px; border-radius: 8px; display: inline-block; letter-spacing: 2px; }
         hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
 
-        /* Ajustes extra para celulares para que quepan 9 números cómodamente */
         @media (max-width: 400px) {
             .slot-box { width: 18px; height: 26px; font-size: 14px; }
             .contenedor-rayas { gap: 2px; }
@@ -79,12 +85,6 @@
             .panel-jugador h3 { font-size: 13px; }
         }
     </style>
-<meta name="theme-color" content="#f3f4f6">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="El Código">
-    <link rel="manifest" href="manifest.json">
 </head>
 <body>
 
@@ -98,6 +98,8 @@
         <p style="color: var(--text-muted); font-size: 14px;">¿Qué deseas hacer?</p>
         <button onclick="mostrarHost()" style="background-color: var(--p1-color);">Crear Sala (Host)</button>
         <button onclick="mostrarGuest()" style="background-color: var(--p2-color);">Unirse a Sala</button>
+        
+        <button id="btn-recuperar" onclick="recuperarPartida()" class="oculto" style="background-color: #f59e0b; margin-top: 25px;">🔄 Recuperar Partida Anterior</button>
     </div>
 
     <div id="pantalla-host" class="tarjeta oculto">
@@ -149,7 +151,6 @@
     </div>
 
     <div id="pantalla-juego" class="oculto">
-        
         <div class="marcador-superior">
             <div class="panel-jugador j1">
                 <h3 id="ui-nombre-j1" style="color: var(--p1-color);">Jugador 1</h3>
@@ -174,62 +175,111 @@
             
             <div id="zona-revancha" class="oculto" style="margin-top: 20px;">
                 <button class="btn-revancha" onclick="solicitarRevancha()">¡Jugar Revancha!</button>
-                <button onclick="location.reload()" style="background-color: white; color: var(--text-main); border: 1px solid var(--border-color);">Salir del Juego</button>
+                <button onclick="salirJuegoDefinitivo()" style="background-color: white; color: var(--text-main); border: 1px solid var(--border-color);">Salir del Juego</button>
             </div>
         </div>
-
     </div>
-
 </div>
 
 <script>
+    // PREVENIR CIERRES ACCIDENTALES
     window.addEventListener('beforeunload', function (e) {
         if (miRol !== 0 && document.getElementById('pantalla-juego').classList.contains('oculto') === false) {
-            e.preventDefault();
-            e.returnValue = '¿Seguro que quieres salir? Se perderá la partida actual.';
+            e.preventDefault(); e.returnValue = '';
+        }
+    });
+
+    // MOSTRAR BOTÓN DE RECUPERAR SI HAY PARTIDA GUARDADA
+    window.addEventListener('load', function() {
+        if(localStorage.getItem('adivinaCodigoGuardado')) {
+            document.getElementById('btn-recuperar').classList.remove('oculto');
         }
     });
 
     let peer = null; let conn = null;
-    let miRol = 0; 
-    let miNombre = "Jugador"; let nombreRival = "Rival";
+    let miRol = 0; let miNombre = "Jugador"; let nombreRival = "Rival";
     let miSecreto = ""; let secretoRival = "";
-    let longitudJuego = 4; let turnoActual = 1;
-    let reglaUnicos = true;
+    let longitudJuego = 4; let turnoActual = 1; let reglaUnicos = true;
     let descubiertoJ1 = []; let descubiertoJ2 = [];
 
+    // --- SISTEMA DE SONIDO ---
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx;
     function reproducirSonido(tipo) {
         try {
             if (!audioCtx) audioCtx = new AudioContext();
             if (audioCtx.state === 'suspended') audioCtx.resume();
-            
-            let osc = audioCtx.createOscillator();
-            let gain = audioCtx.createGain();
+            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
             osc.connect(gain); gain.connect(audioCtx.destination);
             
-            if (tipo === 'turno') {
-                osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.1);
-            } else if (tipo === 'acierto') {
-                osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.15);
-            } else if (tipo === 'ganar') {
-                osc.type = 'square'; osc.frequency.setValueAtTime(400, audioCtx.currentTime);
-                osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1);
-                osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.3);
-                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
-                osc.start(); osc.stop(audioCtx.currentTime + 0.5);
-            }
-        } catch(e) { console.log("Sonido bloqueado por el navegador"); }
+            if (tipo === 'turno') { osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.1); } 
+            else if (tipo === 'acierto') { osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); } 
+            else if (tipo === 'ganar') { osc.type = 'square'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.3); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }
+        } catch(e) {}
+    }
+
+    // --- AUTO-GUARDADO ---
+    function guardarEstado() {
+        if(miRol === 0 || secretoRival === "") return; // Solo guardar si el juego ya empezó
+        let estado = {
+            rol: miRol, nombre: miNombre, rival: nombreRival, miS: miSecreto, rivS: secretoRival,
+            long: longitudJuego, turno: turnoActual, regla: reglaUnicos,
+            dj1: descubiertoJ1, dj2: descubiertoJ2,
+            historial: document.getElementById('historial').innerHTML,
+            sala: (miRol === 1) ? document.getElementById('mostrar-codigo').innerText : document.getElementById('guest-codigo-sala').value.toUpperCase()
+        };
+        localStorage.setItem('adivinaCodigoGuardado', JSON.stringify(estado));
+    }
+
+    function salirJuegoDefinitivo() {
+        localStorage.removeItem('adivinaCodigoGuardado');
+        location.reload();
+    }
+
+    // --- LÓGICA DE RECUPERACIÓN DE PARTIDA ---
+    function recuperarPartida() {
+        let estado = JSON.parse(localStorage.getItem('adivinaCodigoGuardado'));
+        
+        // Restaurar Variables
+        miRol = estado.rol; miNombre = estado.nombre; nombreRival = estado.rival;
+        miSecreto = estado.miS; secretoRival = estado.rivS;
+        longitudJuego = estado.long; turnoActual = estado.turno; reglaUnicos = estado.regla;
+        descubiertoJ1 = estado.dj1; descubiertoJ2 = estado.dj2;
+
+        // Restaurar Pantalla
+        document.getElementById('pantalla-inicio').classList.add('oculto');
+        document.getElementById('pantalla-juego').classList.remove('oculto');
+        document.getElementById('historial').innerHTML = estado.historial;
+        document.getElementById('ui-nombre-j1').innerText = (miRol === 1) ? miNombre + " (Tú)" : nombreRival;
+        document.getElementById('ui-nombre-j2').innerText = (miRol === 2) ? miNombre + " (Tú)" : nombreRival;
+        document.getElementById('mostrar-longitud-juego').innerText = longitudJuego;
+
+        dibujarSlots('rayas-j1', descubiertoJ1); dibujarSlots('rayas-j2', descubiertoJ2);
+        actualizarTurnoUI();
+        agregarAlHistorial("🔄 <i>Restaurando partida. Intentando reconectar...</i>", "mensaje-sistema");
+
+        // Reconectar PeerJS
+        if (miRol === 1) {
+            document.getElementById('mostrar-codigo').innerText = estado.sala;
+            peer = new Peer('sala-' + estado.sala);
+            peer.on('connection', function(conexionEntrante) {
+                conn = conexionEntrante; configurarMensajesComunes();
+                agregarAlHistorial("✅ <i>¡Rival reconectado con éxito!</i>", "mensaje-sistema");
+            });
+        } else {
+            document.getElementById('guest-codigo-sala').value = estado.sala;
+            peer = new Peer();
+            peer.on('open', function() {
+                conn = peer.connect('sala-' + estado.sala);
+                conn.on('open', function() {
+                    configurarMensajesComunes();
+                    agregarAlHistorial("✅ <i>¡Conectado con el Host nuevamente!</i>", "mensaje-sistema");
+                });
+            });
+        }
     }
 
     function tieneRepetidos(str) { return new Set(str).size !== str.length; }
-
     function validarCodigo(codigo, longitud, unicos, idError) {
         let err = document.getElementById(idError);
         if (codigo.length !== longitud) { err.innerText = `Debe tener exactamente ${longitud} números.`; return false; }
@@ -237,40 +287,19 @@
         err.innerText = ""; return true;
     }
 
-    function guardarNombre() {
-        let input = document.getElementById('input-nombre').value.trim();
-        if(input !== "") miNombre = input;
-    }
+    function guardarNombre() { let input = document.getElementById('input-nombre').value.trim(); if(input !== "") miNombre = input; }
 
-    function mostrarHost() {
-        guardarNombre(); miRol = 1;
-        document.getElementById('pantalla-inicio').classList.add('oculto');
-        document.getElementById('pantalla-host').classList.remove('oculto');
-        inicializarPeerHost();
-    }
-
-    function mostrarGuest() {
-        guardarNombre(); miRol = 2;
-        document.getElementById('pantalla-inicio').classList.add('oculto');
-        document.getElementById('pantalla-guest').classList.remove('oculto');
-        peer = new Peer();
-        peer.on('disconnected', function() { peer.reconnect(); });
-    }
+    function mostrarHost() { guardarNombre(); miRol = 1; document.getElementById('pantalla-inicio').classList.add('oculto'); document.getElementById('pantalla-host').classList.remove('oculto'); inicializarPeerHost(); }
+    function mostrarGuest() { guardarNombre(); miRol = 2; document.getElementById('pantalla-inicio').classList.add('oculto'); document.getElementById('pantalla-guest').classList.remove('oculto'); peer = new Peer(); }
 
     function inicializarPeerHost() {
         let codigoRoom = Math.random().toString(36).substring(2, 6).toUpperCase();
         peer = new Peer('sala-' + codigoRoom);
-
-        peer.on('disconnected', function() { peer.reconnect(); });
-
         peer.on('open', function(id) { document.getElementById('mostrar-codigo').innerText = codigoRoom; });
-
         peer.on('connection', function(conexionEntrante) {
-            conn = conexionEntrante;
-            configurarMensajesComunes();
+            conn = conexionEntrante; configurarMensajesComunes();
             document.getElementById('btn-esperar').innerText = "¡Jugador 2 conectado! Iniciar Juego";
-            document.getElementById('btn-esperar').disabled = false;
-            document.getElementById('btn-esperar').style.backgroundColor = "var(--p1-color)";
+            document.getElementById('btn-esperar').disabled = false; document.getElementById('btn-esperar').style.backgroundColor = "var(--p1-color)";
         });
     }
 
@@ -278,19 +307,14 @@
         longitudJuego = parseInt(document.getElementById('host-longitud').value);
         reglaUnicos = document.getElementById('regla-unicos').checked;
         miSecreto = document.getElementById('host-secreto').value;
-
         if (!validarCodigo(miSecreto, longitudJuego, reglaUnicos, 'error-host')) return;
-
         conn.send({ tipo: 'INIT', longitud: longitudJuego, unicos: reglaUnicos, nombre: miNombre });
-        document.getElementById('btn-esperar').innerText = "Esperando código del rival...";
-        document.getElementById('btn-esperar').disabled = true;
+        document.getElementById('btn-esperar').innerText = "Esperando código del rival..."; document.getElementById('btn-esperar').disabled = true;
     }
 
     function guestConectar() {
-        let codigo = document.getElementById('guest-codigo-sala').value.toUpperCase();
-        if (codigo === "") return;
+        let codigo = document.getElementById('guest-codigo-sala').value.toUpperCase(); if (codigo === "") return;
         document.getElementById('error-guest-conexion').innerText = "Conectando...";
-        
         conn = peer.connect('sala-' + codigo);
         conn.on('open', function() { document.getElementById('error-guest-conexion').innerText = ""; configurarMensajesComunes(); });
         peer.on('error', function() { document.getElementById('error-guest-conexion').innerText = "Sala no encontrada."; });
@@ -299,7 +323,6 @@
     function guestEnviarSecreto() {
         miSecreto = document.getElementById('guest-secreto').value;
         if (!validarCodigo(miSecreto, longitudJuego, reglaUnicos, 'error-guest-juego')) return;
-
         conn.send({ tipo: 'SECRET', secreto: miSecreto, nombre: miNombre });
         document.getElementById('guest-paso2').innerHTML = "<p>Esperando al Host...</p>";
     }
@@ -308,10 +331,8 @@
         conn.on('data', function(datos) {
             if (datos.tipo === 'INIT' && miRol === 2) {
                 longitudJuego = datos.longitud; reglaUnicos = datos.unicos; nombreRival = datos.nombre;
-                document.getElementById('guest-paso1').classList.add('oculto');
-                document.getElementById('guest-paso2').classList.remove('oculto');
-                document.getElementById('nombre-rival-guest').innerText = nombreRival;
-                document.getElementById('guest-mostrar-longitud').innerText = longitudJuego;
+                document.getElementById('guest-paso1').classList.add('oculto'); document.getElementById('guest-paso2').classList.remove('oculto');
+                document.getElementById('nombre-rival-guest').innerText = nombreRival; document.getElementById('guest-mostrar-longitud').innerText = longitudJuego;
                 document.getElementById('guest-regla-texto').innerText = reglaUnicos ? "Regla: Sin números repetidos." : "Regla: Se permiten repetidos.";
             } 
             else if (datos.tipo === 'SECRET' && miRol === 1) {
@@ -321,22 +342,16 @@
                 iniciarTablero();
             } 
             else if (datos.tipo === 'START' && miRol === 2) {
-                turnoActual = datos.turno; secretoRival = datos.secretoHost;
-                iniciarTablero();
+                turnoActual = datos.turno; secretoRival = datos.secretoHost; iniciarTablero();
             } 
             else if (datos.tipo === 'GUESS') { procesarIntento(datos.intento, (miRol === 1 ? 2 : 1)); }
-            else if (datos.tipo === 'REMATCH_REQ') { 
-                prepararRevancha();
-                if(miRol === 1) hostEsperarJugador();
-            }
+            else if (datos.tipo === 'REMATCH_REQ') { prepararRevancha(); if(miRol === 1) hostEsperarJugador(); }
         });
     }
 
     function iniciarTablero() {
-        document.getElementById('pantalla-host').classList.add('oculto');
-        document.getElementById('pantalla-guest').classList.add('oculto');
-        document.getElementById('zona-revancha').classList.add('oculto');
-        document.getElementById('historial').innerHTML = ''; 
+        document.getElementById('pantalla-host').classList.add('oculto'); document.getElementById('pantalla-guest').classList.add('oculto');
+        document.getElementById('zona-revancha').classList.add('oculto'); document.getElementById('historial').innerHTML = ''; 
         document.getElementById('pantalla-juego').classList.remove('oculto');
 
         document.getElementById('ui-nombre-j1').innerText = (miRol === 1) ? miNombre + " (Tú)" : nombreRival;
@@ -346,38 +361,30 @@
         dibujarSlots('rayas-j1', descubiertoJ1); dibujarSlots('rayas-j2', descubiertoJ2);
         
         document.getElementById('mostrar-longitud-juego').innerText = longitudJuego;
-        let quienEmpieza = (turnoActual === miRol) ? "¡Empiezas tú!" : "Empieza " + nombreRival;
-        agregarAlHistorial("🏁 Partida iniciada. " + quienEmpieza, "mensaje-sistema");
+        agregarAlHistorial("🏁 Partida iniciada. Empieza " + ((turnoActual === miRol) ? "tú" : nombreRival), "mensaje-sistema");
         actualizarTurnoUI();
+        guardarEstado(); // Guardar el inicio del tablero
     }
 
     function dibujarSlots(idContenedor, arrayDescubierto, indiceAnimar = -1) {
-        let contenedor = document.getElementById(idContenedor);
-        contenedor.innerHTML = ''; 
+        let contenedor = document.getElementById(idContenedor); contenedor.innerHTML = ''; 
         for (let i = 0; i < arrayDescubierto.length; i++) {
-            let divSlot = document.createElement('div');
-            divSlot.className = 'slot-box';
-            divSlot.innerText = arrayDescubierto[i];
+            let divSlot = document.createElement('div'); divSlot.className = 'slot-box'; divSlot.innerText = arrayDescubierto[i];
             if (i === indiceAnimar) divSlot.classList.add('animacion-pop');
             contenedor.appendChild(divSlot);
         }
     }
 
     function actualizarTurnoUI() {
-        let titulo = document.getElementById('titulo-turno');
-        let input = document.getElementById('intento');
-        let boton = document.getElementById('btn-adivinar');
-        
+        let titulo = document.getElementById('titulo-turno'); let input = document.getElementById('intento'); let boton = document.getElementById('btn-adivinar');
         input.value = ""; document.getElementById('error-juego').innerText = "";
 
         if (turnoActual === miRol) {
             reproducirSonido('turno'); 
-            titulo.innerText = "¡Es tu turno!";
-            titulo.style.color = miRol === 1 ? "var(--p1-color)" : "var(--p2-color)";
+            titulo.innerText = "¡Es tu turno!"; titulo.style.color = miRol === 1 ? "var(--p1-color)" : "var(--p2-color)";
             input.disabled = false; boton.disabled = false; input.focus();
         } else {
-            titulo.innerText = `Turno de ${nombreRival}...`;
-            titulo.style.color = "var(--text-muted)";
+            titulo.innerText = `Turno de ${nombreRival}...`; titulo.style.color = "var(--text-muted)";
             input.disabled = true; boton.disabled = true;
         }
     }
@@ -385,9 +392,7 @@
     function enviarIntento() {
         let intento = document.getElementById('intento').value;
         if (!validarCodigo(intento, longitudJuego, reglaUnicos, 'error-juego')) return;
-
-        reproducirSonido('acierto');
-        procesarIntento(intento, miRol);
+        reproducirSonido('acierto'); procesarIntento(intento, miRol);
         conn.send({ tipo: 'GUESS', intento: intento });
     }
 
@@ -401,97 +406,71 @@
         for (let i = 0; i < longitudJuego; i++) {
             if (intentoStr[i] === codigoAComparar[i]) {
                 if (arrayDestino[i] === '') indexAnimado = i; 
-                arrayDestino[i] = intentoStr[i];
-                aciertos++;
+                arrayDestino[i] = intentoStr[i]; aciertos++;
             }
         }
         dibujarSlots(idContenedor, arrayDestino, indexAnimado); 
 
         let claseColor = esJ1 ? "turno-j1" : "turno-j2";
         let nombre = (quienHizoElIntento === miRol) ? "Tú: " : nombreRival + ": ";
-        
         let emojiAciertos = aciertos > 0 ? "🟢".repeat(aciertos) : "❌";
         let mensaje = `<b>${nombre}</b> ${intentoStr} ➔ ${emojiAciertos}`;
 
         let gano = !arrayDestino.includes('');
 
         if (gano) {
-            mensaje += " ¡CÓDIGO DESCUBIERTO! 🏆";
-            agregarAlHistorial(mensaje, claseColor);
+            mensaje += " ¡CÓDIGO DESCUBIERTO! 🏆"; agregarAlHistorial(mensaje, claseColor);
             finalizarJuego(quienHizoElIntento);
+            guardarEstado(); // Guardar el estado de victoria
             return; 
         }
 
         agregarAlHistorial(mensaje, claseColor);
         turnoActual = (turnoActual === 1) ? 2 : 1;
         actualizarTurnoUI();
+        guardarEstado(); // <-- AUTO-GUARDADO DESPUÉS DE CADA TURNO
     }
 
     function finalizarJuego(ganador) {
-        document.getElementById('intento').disabled = true;
-        document.getElementById('btn-adivinar').disabled = true;
-        document.getElementById('zona-revancha').classList.remove('oculto');
-        reproducirSonido('ganar');
+        document.getElementById('intento').disabled = true; document.getElementById('btn-adivinar').disabled = true;
+        document.getElementById('zona-revancha').classList.remove('oculto'); reproducirSonido('ganar');
 
         if (ganador === miRol) {
-            document.getElementById('titulo-turno').innerText = "¡GANASTE! 🎉";
-            document.getElementById('titulo-turno').style.color = "#10b981";
+            document.getElementById('titulo-turno').innerText = "¡GANASTE! 🎉"; document.getElementById('titulo-turno').style.color = "#10b981";
             confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); 
         } else {
-            document.getElementById('titulo-turno').innerText = "Ganó " + nombreRival + " 😔";
-            document.getElementById('titulo-turno').style.color = "#dc2626";
+            document.getElementById('titulo-turno').innerText = "Ganó " + nombreRival + " 😔"; document.getElementById('titulo-turno').style.color = "#dc2626";
             agregarAlHistorial(`Tu código era: ${miSecreto}`, "mensaje-sistema");
         }
     }
 
     function agregarAlHistorial(texto, clase) {
-        let historial = document.getElementById('historial');
-        let parrafo = document.createElement('div');
-        parrafo.className = clase; parrafo.style.margin = "8px 0";
-        parrafo.innerHTML = texto; historial.appendChild(parrafo);
+        let historial = document.getElementById('historial'); let parrafo = document.createElement('div');
+        parrafo.className = clase; parrafo.style.margin = "8px 0"; parrafo.innerHTML = texto; historial.appendChild(parrafo);
         historial.scrollTop = historial.scrollHeight;
     }
 
     function solicitarRevancha() {
+        localStorage.removeItem('adivinaCodigoGuardado'); // Borramos el guardado al pedir revancha
         conn.send({ tipo: 'REMATCH_REQ' });
         prepararRevancha();
         if(miRol === 1) hostEsperarJugador(); 
     }
 
     function prepararRevancha() {
-        document.getElementById('pantalla-juego').classList.add('oculto');
-        document.getElementById('historial').innerHTML = '';
-        
+        document.getElementById('pantalla-juego').classList.add('oculto'); document.getElementById('historial').innerHTML = '';
         if (miRol === 1) {
-            document.getElementById('pantalla-host').classList.remove('oculto');
-            document.getElementById('host-secreto').value = "";
-            document.getElementById('btn-esperar').innerText = "Esperando nueva ronda...";
-            document.getElementById('btn-esperar').disabled = false;
+            document.getElementById('pantalla-host').classList.remove('oculto'); document.getElementById('host-secreto').value = "";
+            document.getElementById('btn-esperar').innerText = "Esperando nueva ronda..."; document.getElementById('btn-esperar').disabled = false;
         } else {
-            document.getElementById('pantalla-guest').classList.remove('oculto');
-            document.getElementById('guest-secreto').value = "";
-            document.getElementById('guest-paso2').innerHTML = `
-                <p style="color: var(--p2-color); font-weight: bold;">¡Revancha aceptada!</p>
-                <label>Tu NUEVO Código Secreto:</label><br>
-                <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ingresa tus números" autocomplete="off" style="letter-spacing: 2px; font-weight: bold;">
-                <p id="error-guest-juego" class="alerta"></p>
-                <button onclick="guestEnviarSecreto()">¡Listo para Jugar!</button>
-            `;
+            document.getElementById('pantalla-guest').classList.remove('oculto'); document.getElementById('guest-secreto').value = "";
+            document.getElementById('guest-paso2').innerHTML = `<p style="color: var(--p2-color); font-weight: bold;">¡Revancha aceptada!</p><label>Tu NUEVO Código Secreto:</label><br><input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ingresa tus números" autocomplete="off" style="letter-spacing: 2px; font-weight: bold;"><p id="error-guest-juego" class="alerta"></p><button onclick="guestEnviarSecreto()">¡Listo para Jugar!</button>`;
         }
     }
 </script>
 
 <script>
-    if ('serviceWorker' in navigator) {
-        window.addEventListener('load', function() {
-            navigator.serviceWorker.register('./sw.js')
-            .then(function(registro) {
-                console.log('Service Worker registrado con éxito:', registro.scope);
-            }, function(error) {
-                console.log('Error al registrar el Service Worker:', error);
-            });
-        });
-    }
+    if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('./sw.js'); }); }
 </script>
 </body>
 </html>
