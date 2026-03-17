@@ -71,8 +71,10 @@
         .codigo-sala { font-family: 'Courier New', Courier, monospace; font-size: 24px; font-weight: bold; color: var(--p1-color); background: #e0e7ff; padding: 10px; border-radius: 8px; display: inline-block; letter-spacing: 2px; }
         hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
 
+        /* Ajustes extra para celulares para que quepan 9 números cómodamente */
         @media (max-width: 400px) {
-            .slot-box { width: 20px; height: 28px; font-size: 15px; }
+            .slot-box { width: 18px; height: 26px; font-size: 14px; }
+            .contenedor-rayas { gap: 2px; }
             h1 { font-size: 24px; }
             .panel-jugador h3 { font-size: 13px; }
         }
@@ -102,6 +104,9 @@
             <option value="4">4 Números</option>
             <option value="5">5 Números</option>
             <option value="6">6 Números</option>
+            <option value="7">7 Números</option>
+            <option value="8">8 Números</option>
+            <option value="9">9 Números</option>
         </select>
         
         <div class="checkbox-container">
@@ -111,7 +116,7 @@
         
         <br>
         <label>Tu Código Secreto:</label><br>
-        <input type="text" inputmode="numeric" pattern="[0-9]*" id="host-secreto" placeholder="Ej. 1234" autocomplete="off">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="host-secreto" placeholder="Ingresa tus números" autocomplete="off">
         <p id="error-host" class="alerta"></p>
 
         <button id="btn-esperar" onclick="hostEsperarJugador()" disabled>Esperando a tu rival...</button>
@@ -131,7 +136,7 @@
             <p style="color: var(--p2-color); font-weight: bold;">¡Conectado con <span id="nombre-rival-guest"></span>!</p>
             <p style="font-size: 14px; color: var(--text-muted);">Jugaremos con <span id="guest-mostrar-longitud" style="font-weight: bold;"></span> números.<br><span id="guest-regla-texto"></span></p>
             <label>Tu Código Secreto:</label><br>
-            <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ej. 5678" autocomplete="off">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ingresa tus números" autocomplete="off">
             <p id="error-guest-juego" class="alerta"></p>
             <button onclick="guestEnviarSecreto()">¡Listo para Jugar!</button>
         </div>
@@ -172,7 +177,6 @@
 </div>
 
 <script>
-    // PREVENCIÓN DE RECARGA ACCIDENTAL / SUSPENSIÓN DE BACKGROUND
     window.addEventListener('beforeunload', function (e) {
         if (miRol !== 0 && document.getElementById('pantalla-juego').classList.contains('oculto') === false) {
             e.preventDefault();
@@ -244,7 +248,6 @@
         document.getElementById('pantalla-inicio').classList.add('oculto');
         document.getElementById('pantalla-guest').classList.remove('oculto');
         peer = new Peer();
-        // Reconexión automática si parpadea el internet
         peer.on('disconnected', function() { peer.reconnect(); });
     }
 
@@ -252,7 +255,6 @@
         let codigoRoom = Math.random().toString(36).substring(2, 6).toUpperCase();
         peer = new Peer('sala-' + codigoRoom);
 
-        // Reconexión automática si parpadea el internet
         peer.on('disconnected', function() { peer.reconnect(); });
 
         peer.on('open', function(id) { document.getElementById('mostrar-codigo').innerText = codigoRoom; });
@@ -465,7 +467,7 @@
             document.getElementById('guest-paso2').innerHTML = `
                 <p style="color: var(--p2-color); font-weight: bold;">¡Revancha aceptada!</p>
                 <label>Tu NUEVO Código Secreto:</label><br>
-                <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ej. 5678" autocomplete="off" style="letter-spacing: 2px; font-weight: bold;">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ingresa tus números" autocomplete="off" style="letter-spacing: 2px; font-weight: bold;">
                 <p id="error-guest-juego" class="alerta"></p>
                 <button onclick="guestEnviarSecreto()">¡Listo para Jugar!</button>
             `;
