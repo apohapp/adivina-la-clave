@@ -30,10 +30,8 @@
         .tarjeta { background: var(--bg-card); padding: 25px; border-radius: 16px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-color); max-width: 500px; margin: 0 auto; margin-bottom: 20px; }
         .oculto { display: none !important; }
         
-        /* --- NUEVO DISEÑO ZONA DE JUEGO --- */
         #pantalla-juego { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto;}
         
-        /* Marcador Superior (Lado a lado) */
         .marcador-superior { display: flex; justify-content: space-between; width: 100%; gap: 10px; }
         .panel-jugador { flex: 1; background: var(--bg-card); padding: 15px 10px; border-radius: 12px; box-shadow: var(--shadow-subtle); border: 1px solid var(--border-color); min-width: 0;}
         .panel-jugador.j1 { border-top: 4px solid var(--p1-color); }
@@ -52,7 +50,7 @@
         }
         .animacion-pop { animation: pop 0.6s ease; }
 
-        input[type="number"], input[type="password"], input[type="text"], select { padding: 12px; margin: 10px 0; font-size: 16px; border-radius: 8px; text-align: center; font-family: 'Poppins', sans-serif; background: var(--bg-body); border: 1px solid var(--border-color); width: 100%; max-width: 250px; box-sizing: border-box; }
+        input[type="number"], input[type="text"], select { padding: 12px; margin: 10px 0; font-size: 16px; border-radius: 8px; text-align: center; font-family: 'Poppins', sans-serif; background: var(--bg-body); border: 1px solid var(--border-color); width: 100%; max-width: 250px; box-sizing: border-box; letter-spacing: 2px; font-weight: bold;}
         input:focus, select:focus { outline: none; border-color: var(--text-main); }
         .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; font-size: 14px; color: var(--text-muted); }
         .checkbox-container input { width: auto; margin: 0; cursor: pointer; }
@@ -73,7 +71,6 @@
         .codigo-sala { font-family: 'Courier New', Courier, monospace; font-size: 24px; font-weight: bold; color: var(--p1-color); background: #e0e7ff; padding: 10px; border-radius: 8px; display: inline-block; letter-spacing: 2px; }
         hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
 
-        /* Ajustes extra para pantallas aún más pequeñas (celulares estrechos) */
         @media (max-width: 400px) {
             .slot-box { width: 20px; height: 28px; font-size: 15px; }
             h1 { font-size: 24px; }
@@ -88,7 +85,7 @@
 
     <div id="pantalla-inicio" class="tarjeta">
         <label style="font-weight: 600;">¿Cuál es tu nombre?</label><br>
-        <input type="text" id="input-nombre" placeholder="Escribe tu nombre">
+        <input type="text" id="input-nombre" placeholder="Escribe tu nombre" autocomplete="off">
         <hr>
         <p style="color: var(--text-muted); font-size: 14px;">¿Qué deseas hacer?</p>
         <button onclick="mostrarHost()" style="background-color: var(--p1-color);">Crear Sala (Host)</button>
@@ -114,7 +111,7 @@
         
         <br>
         <label>Tu Código Secreto:</label><br>
-        <input type="password" id="host-secreto" placeholder="Ej. 1234">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="host-secreto" placeholder="Ej. 1234" autocomplete="off">
         <p id="error-host" class="alerta"></p>
 
         <button id="btn-esperar" onclick="hostEsperarJugador()" disabled>Esperando a tu rival...</button>
@@ -125,7 +122,7 @@
         
         <div id="guest-paso1">
             <label>Código de la Sala:</label><br>
-            <input type="text" id="guest-codigo-sala" placeholder="Ej. ABCD" style="text-transform: uppercase;">
+            <input type="text" id="guest-codigo-sala" placeholder="Ej. ABCD" style="text-transform: uppercase;" autocomplete="off">
             <p id="error-guest-conexion" class="alerta"></p>
             <button onclick="guestConectar()">Conectar</button>
         </div>
@@ -134,7 +131,7 @@
             <p style="color: var(--p2-color); font-weight: bold;">¡Conectado con <span id="nombre-rival-guest"></span>!</p>
             <p style="font-size: 14px; color: var(--text-muted);">Jugaremos con <span id="guest-mostrar-longitud" style="font-weight: bold;"></span> números.<br><span id="guest-regla-texto"></span></p>
             <label>Tu Código Secreto:</label><br>
-            <input type="password" id="guest-secreto" placeholder="Ej. 5678">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ej. 5678" autocomplete="off">
             <p id="error-guest-juego" class="alerta"></p>
             <button onclick="guestEnviarSecreto()">¡Listo para Jugar!</button>
         </div>
@@ -157,7 +154,7 @@
             <h2 id="titulo-turno" style="font-size: 20px;">Turno del Jugador</h2>
             <p id="mensaje-estado" style="color: var(--text-muted); font-size: 14px;">Ingresa <span id="mostrar-longitud-juego" style="font-weight: 600;"></span> números:</p>
             
-            <input type="number" id="intento" placeholder="Tu intento...">
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="intento" placeholder="Tu intento..." autocomplete="off">
             <br>
             <button id="btn-adivinar" onclick="enviarIntento()">Adivinar</button>
             <p id="error-juego" class="alerta"></p>
@@ -175,6 +172,14 @@
 </div>
 
 <script>
+    // PREVENCIÓN DE RECARGA ACCIDENTAL / SUSPENSIÓN DE BACKGROUND
+    window.addEventListener('beforeunload', function (e) {
+        if (miRol !== 0 && document.getElementById('pantalla-juego').classList.contains('oculto') === false) {
+            e.preventDefault();
+            e.returnValue = '¿Seguro que quieres salir? Se perderá la partida actual.';
+        }
+    });
+
     let peer = null; let conn = null;
     let miRol = 0; 
     let miNombre = "Jugador"; let nombreRival = "Rival";
@@ -239,11 +244,16 @@
         document.getElementById('pantalla-inicio').classList.add('oculto');
         document.getElementById('pantalla-guest').classList.remove('oculto');
         peer = new Peer();
+        // Reconexión automática si parpadea el internet
+        peer.on('disconnected', function() { peer.reconnect(); });
     }
 
     function inicializarPeerHost() {
         let codigoRoom = Math.random().toString(36).substring(2, 6).toUpperCase();
         peer = new Peer('sala-' + codigoRoom);
+
+        // Reconexión automática si parpadea el internet
+        peer.on('disconnected', function() { peer.reconnect(); });
 
         peer.on('open', function(id) { document.getElementById('mostrar-codigo').innerText = codigoRoom; });
 
@@ -455,7 +465,7 @@
             document.getElementById('guest-paso2').innerHTML = `
                 <p style="color: var(--p2-color); font-weight: bold;">¡Revancha aceptada!</p>
                 <label>Tu NUEVO Código Secreto:</label><br>
-                <input type="password" id="guest-secreto" placeholder="Ej. 5678">
+                <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Ej. 5678" autocomplete="off" style="letter-spacing: 2px; font-weight: bold;">
                 <p id="error-guest-juego" class="alerta"></p>
                 <button onclick="guestEnviarSecreto()">¡Listo para Jugar!</button>
             `;
