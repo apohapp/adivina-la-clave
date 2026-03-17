@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Adivina el Código - Online</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
+    <style>
+        :root {
+            --bg-body: #f3f4f6;
+            --bg-card: #ffffff;
+            --text-main: #111827;
+            --text-muted: #6b7280;
+            --p1-color: #4338ca;
+            --p2-color: #0f766e;
+            --btn-bg: #171717;
+            --btn-hover: #404040;
+            --border-color: #e5e7eb;
+            --shadow-subtle: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            text-align: center;
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .contenedor-principal { max-width: 1000px; margin: 0 auto; }
+        
+        h1 {
+            color: var(--text-main);
+            font-size: 32px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+        }
+        h2, h3 { font-weight: 600; margin-top: 0; }
+
+        .tarjeta {
+            background: var(--bg-card);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+            max-width: 500px;
+            margin: 0 auto;
+            margin-bottom: 20px;
+        }
+
+        .oculto { display: none !important; }
+        
+        #pantalla-juego {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 20px;
+        }
+
+        .panel-lateral {
+            flex: 1;
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 16px;
+            min-width: 150px;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+        }
+        .panel-central {
+            flex: 2;
+            background: var(--bg-card);
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+        }
+
+        .contenedor-rayas {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        .slot-box {
+            width: 32px;
+            height: 42px;
+            background: var(--bg-body);
+            border-radius: 6px;
+            font-size: 22px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border-color);
+        }
+
+        input[type="number"], input[type="password"], input[type="text"], select {
+            padding: 12px;
+            margin: 10px 0;
+            font-size: 16px;
+            border-radius: 8px;
+            text-align: center;
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-body);
+            border: 1px solid var(--border-color);
+            width: 100%;
+            max-width: 250px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--text-main); }
+
+        button {
+            background-color: var(--btn-bg);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            font-size: 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            margin-top: 10px;
+            transition: all 0.2s;
+            width: 100%;
+            max-width: 250px;
+        }
+        button:hover { background-color: var(--btn-hover); }
+        button:disabled { background-color: #ccc; cursor: not-allowed; }
+
+        .historial {
+            background-color: var(--bg-body);
+            border-radius: 8px;
+            padding: 15px;
+            height: 200px;
+            overflow-y: auto;
+            text-align: left;
+            margin-top: 20px;
+            font-size: 14px;
+            border: 1px solid var(--border-color);
+        }
+        
+        .mensaje-sistema { color: var(--text-muted); font-style: italic; text-align: center; margin: 10px 0;}
+        .turno-j1 { color: var(--p1-color); font-weight: 600; }
+        .turno-j2 { color: var(--p2-color); font-weight: 600; }
+        .alerta { color: #dc2626; font-size: 14px; font-weight: 500; margin-bottom: 10px; }
+        
+        .codigo-sala {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 24px;
+            font-weight: bold;
+            color: var(--p1-color);
+            background: #e0e7ff;
+            padding: 10px;
+            border-radius: 8px;
+            display: inline-block;
+            letter-spacing: 2px;
+        }
+
+        hr { border: 0; border-top: 1px solid var(--border-color); margin: 25px 0; }
+
+        @media (max-width: 768px) {
+            #pantalla-juego { flex-direction: column; align-items: center; }
+            .panel-lateral, .panel-central { width: 100%; box-sizing: border-box; margin-bottom: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="contenedor-principal">
+    <h1>Adivina el Código</h1>
+
+    <div id="menu-principal" class="tarjeta">
+        <p style="color: var(--text-muted);">¿Qué deseas hacer?</p>
+        <button onclick="mostrarHost()" style="background-color: var(--p1-color);">Crear Sala (Jugador 1)</button>
+        <button onclick="mostrarGuest()" style="background-color: var(--p2-color);">Unirse a Sala (Jugador 2)</button>
+    </div>
+
+    <div id="pantalla-host" class="tarjeta oculto">
+        <h3 style="color: var(--p1-color);">Sala Creada</h3>
+        <p>Tu Código de Sala es:</p>
+        <div class="codigo-sala" id="mostrar-codigo">Cargando...</div>
+        <p style="font-size: 13px; color: var(--text-muted);">Pásale este código al Jugador 2</p>
+        
+        <hr>
+        
+        <label>¿Con cuántos números jugarán?</label><br>
+        <select id="host-longitud">
+            <option value="4">4 Números</option>
+            <option value="5">5 Números</option>
+            <option value="6">6 Números</option>
+        </select>
+        <br>
+        <label>Tu Código Secreto:</label><br>
+        <input type="password" id="host-secreto" placeholder="Ej. 1234">
+        <p id="error-host" class="alerta"></p>
+
+        <button id="btn-esperar" onclick="hostEsperarJugador()" disabled>Esperando conexión...</button>
+    </div>
+
+    <div id="pantalla-guest" class="tarjeta oculto">
+        <h3 style="color: var(--p2-color);">Unirse a Sala</h3>
+        
+        <div id="guest-paso1">
+            <label>Ingresa el Código de la Sala:</label><br>
+            <input type="text" id="guest-codigo-sala" placeholder="Ej. ABCD" style="text-transform: uppercase;">
+            <p id="error-guest-conexion" class="alerta"></p>
+            <button onclick="guestConectar()">Conectar</button>
+        </div>
+
+        <div id="guest-paso2" class="oculto">
+            <p style="color: var(--p2-color); font-weight: bold;">¡Conectado!</p>
+            <p>El Jugador 1 eligió jugar con <span id="guest-mostrar-longitud" style="font-weight: bold;"></span> números.</p>
+            <label>Tu Código Secreto:</label><br>
+            <input type="password" id="guest-secreto" placeholder="Ej. 5678">
+            <p id="error-guest-juego" class="alerta"></p>
+            <button onclick="guestEnviarSecreto()">¡Listo para Jugar!</button>
+        </div>
+    </div>
+
+    <div id="pantalla-juego" class="oculto">
+        <div class="panel-lateral" style="border-top: 4px solid var(--p1-color);">
+            <h3 style="color: var(--p1-color);">Jugador 1</h3>
+            <div id="rayas-j1" class="contenedor-rayas"></div>
+        </div>
+
+        <div class="panel-central">
+            <h2 id="titulo-turno">Turno del Jugador</h2>
+            <p id="mensaje-estado" style="color: var(--text-muted); font-size: 14px;">Ingresa <span id="mostrar-longitud-juego" style="font-weight: 600;"></span> números:</p>
+            
+            <input type="number" id="intento" placeholder="Tu intento...">
+            <br>
+            <button id="btn-adivinar" onclick="enviarIntento()">Adivinar</button>
+            <p id="error-juego" class="alerta"></p>
+
+            <div class="historial" id="historial"></div>
+        </div>
+
+        <div class="panel-lateral" style="border-top: 4px solid var(--p2-color);">
+            <h3 style="color: var(--p2-color);">Jugador 2</h3>
+            <div id="rayas-j2" class="contenedor-rayas"></div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    // Variables Globales
+    let peer = null;
+    let conn = null;
+    let miRol = 0; // 1 = Host, 2 = Guest
+    let miSecreto = "";
+    let secretoRival = "";
+    let longitudJuego = 4;
+    let turnoActual = 1;
+    let descubiertoJ1 = []; 
+    let descubiertoJ2 = [];
+
+    // --- FUNCIONES DE MENÚ ---
+    function mostrarHost() {
+        miRol = 1;
+        document.getElementById('menu-principal').classList.add('oculto');
+        document.getElementById('pantalla-host').classList.remove('oculto');
+        inicializarPeerHost();
+    }
+
+    function mostrarGuest() {
+        miRol = 2;
+        document.getElementById('menu-principal').classList.add('oculto');
+        document.getElementById('pantalla-guest').classList.remove('oculto');
+        // Inicializamos un peer sin ID específico para el invitado
+        peer = new Peer();
+    }
+
+    // --- LÓGICA DEL JUGADOR 1 (HOST) ---
+    function inicializarPeerHost() {
+        // Generar un código aleatorio de 4 letras/números
+        let codigoRoom = Math.random().toString(36).substring(2, 6).toUpperCase();
+        document.getElementById('mostrar-codigo').innerText = codigoRoom;
+        
+        peer = new Peer('código-' + codigoRoom);
+
+        peer.on('connection', function(conexionEntrante) {
+            conn = conexionEntrante;
+            configurarMensajesHost();
+            document.getElementById('btn-esperar').innerText = "¡Jugador 2 conectado! Iniciar Juego";
+            document.getElementById('btn-esperar').disabled = false;
+            document.getElementById('btn-esperar').style.backgroundColor = "var(--p1-color)";
+        });
+    }
+
+    function hostEsperarJugador() {
+        longitudJuego = parseInt(document.getElementById('host-longitud').value);
+        miSecreto = document.getElementById('host-secreto').value;
+
+        if (miSecreto.length !== longitudJuego) {
+            document.getElementById('error-host').innerText = "Tu código debe tener exactamente " + longitudJuego + " números.";
+            return;
+        }
+
+        // Enviar la configuración al invitado
+        conn.send({ tipo: 'INIT', longitud: longitudJuego });
+        document.getElementById('btn-esperar').innerText = "Esperando que J2 elija su código...";
+        document.getElementById('btn-esperar').disabled = true;
+    }
+
+    function configurarMensajesHost() {
+        conn.on('data', function(datos) {
+            if (datos.tipo === 'SECRET') {
+                // El invitado envió su secreto
+                secretoRival = datos.secreto;
+                // Decidir quién empieza al azar
+                turnoActual = Math.random() < 0.5 ? 1 : 2;
+                // Avisarle al invitado que empiece
+                conn.send({ tipo: 'START', turno: turnoActual, secretoHost: miSecreto });
+                iniciarTablero();
+            } else if (datos.tipo === 'GUESS') {
+                procesarIntento(datos.intento, 2);
+            }
+        });
+    }
+
+    // --- LÓGICA DEL JUGADOR 2 (GUEST) ---
+    function guestConectar() {
+        let codigo = document.getElementById('guest-codigo-sala').value.toUpperCase();
+        if (codigo === "") return;
+
+        document.getElementById('error-guest-conexion').innerText = "Conectando...";
+        conn = peer.connect('código-' + codigo);
+
+        conn.on('open', function() {
+            document.getElementById('error-guest-conexion').innerText = "";
+            configurarMensajesGuest();
+        });
+
+        conn.on('error', function() {
+            document.getElementById('error-guest-conexion').innerText = "No se encontró la sala.";
+        });
+    }
+
+    function configurarMensajesGuest() {
+        conn.on('data', function(datos) {
+            if (datos.tipo === 'INIT') {
+                longitudJuego = datos.longitud;
+                document.getElementById('guest-paso1').classList.add('oculto');
+                document.getElementById('guest-paso2').classList.remove('oculto');
+                document.getElementById('guest-mostrar-longitud').innerText = longitudJuego;
+            } else if (datos.tipo === 'START') {
+                turnoActual = datos.turno;
+                secretoRival = datos.secretoHost;
+                iniciarTablero();
+            } else if (datos.tipo === 'GUESS') {
+                procesarIntento(datos.intento, 1);
+            }
+        });
+    }
+
+    function guestEnviarSecreto() {
+        miSecreto = document.getElementById('guest-secreto').value;
+        if (miSecreto.length !== longitudJuego) {
+            document.getElementById('error-guest-juego').innerText = "Tu código debe tener " + longitudJuego + " números.";
+            return;
+        }
+        conn.send({ tipo: 'SECRET', secreto: miSecreto });
+        document.getElementById('guest-paso2').innerHTML = "<p>Esperando al Jugador 1...</p>";
+    }
+
+    // --- LÓGICA COMPARTIDA DEL JUEGO ---
+    function iniciarTablero() {
+        document.getElementById('pantalla-host').classList.add('oculto');
+        document.getElementById('pantalla-guest').classList.add('oculto');
+        document.getElementById('pantalla-juego').classList.remove('oculto');
+
+        descubiertoJ1 = Array(longitudJuego).fill('');
+        descubiertoJ2 = Array(longitudJuego).fill('');
+
+        dibujarSlots('rayas-j1', descubiertoJ1);
+        dibujarSlots('rayas-j2', descubiertoJ2);
+        
+        document.getElementById('mostrar-longitud-juego').innerText = longitudJuego;
+        agregarAlHistorial("¡Conexión establecida! Empieza el Jugador " + turnoActual, "mensaje-sistema");
+        actualizarTurnoUI();
+    }
+
+    function dibujarSlots(idContenedor, arrayDescubierto) {
+        let contenedor = document.getElementById(idContenedor);
+        contenedor.innerHTML = ''; 
+        for (let i = 0; i < arrayDescubierto.length; i++) {
+            let divSlot = document.createElement('div');
+            divSlot.className = 'slot-box';
+            divSlot.innerText = arrayDescubierto[i];
+            contenedor.appendChild(divSlot);
+        }
+    }
+
+    function actualizarTurnoUI() {
+        let titulo = document.getElementById('titulo-turno');
+        let input = document.getElementById('intento');
+        let boton = document.getElementById('btn-adivinar');
+        let mensaje = document.getElementById('mensaje-estado');
+
+        if (turnoActual === miRol) {
+            titulo.innerText = "¡Es tu turno!";
+            titulo.style.color = miRol === 1 ? "var(--p1-color)" : "var(--p2-color)";
+            mensaje.innerText = "Adivina el código de tu rival:";
+            input.disabled = false;
+            boton.disabled = false;
+            input.value = "";
+            input.focus();
+        } else {
+            titulo.innerText = "Turno del Rival...";
+            titulo.style.color = "var(--text-muted)";
+            mensaje.innerText = "Espera a que el otro jugador intente adivinar.";
+            input.disabled = true;
+            boton.disabled = true;
+            input.value = "";
+        }
+    }
+
+    function enviarIntento() {
+        let intento = document.getElementById('intento').value;
+        document.getElementById('error-juego').innerText = "";
+
+        if (intento.length !== longitudJuego) {
+            document.getElementById('error-juego').innerText = "Ingresa " + longitudJuego + " números.";
+            return;
+        }
+
+        // Procesar en mi pantalla
+        procesarIntento(intento, miRol);
+        
+        // Enviar por internet al rival
+        conn.send({ tipo: 'GUESS', intento: intento });
+    }
+
+    // QuiénHizoElIntento es 1 o 2
+    function procesarIntento(intentoStr, quienHizoElIntento) {
+        let aciertos = 0;
+        let codigoAComparar = (quienHizoElIntento === miRol) ? secretoRival : miSecreto;
+
+        if (quienHizoElIntento === 1) {
+            for (let i = 0; i < longitudJuego; i++) {
+                if (intentoStr[i] === codigoAComparar[i]) {
+                    descubiertoJ2[i] = intentoStr[i];
+                    aciertos++;
+                }
+            }
+            dibujarSlots('rayas-j2', descubiertoJ2); 
+        } else {
+            for (let i = 0; i < longitudJuego; i++) {
+                if (intentoStr[i] === codigoAComparar[i]) {
+                    descubiertoJ1[i] = intentoStr[i];
+                    aciertos++;
+                }
+            }
+            dibujarSlots('rayas-j1', descubiertoJ1); 
+        }
+
+        let claseColor = (quienHizoElIntento === 1) ? "turno-j1" : "turno-j2";
+        let nombre = (quienHizoElIntento === miRol) ? "Tú dices: " : "Rival dice: ";
+        let mensaje = nombre + intentoStr + " ➔ ";
+
+        let ganoJugador1 = !descubiertoJ2.includes('');
+        let ganoJugador2 = !descubiertoJ1.includes('');
+
+        if (ganoJugador1 || ganoJugador2) {
+            mensaje += "¡CÓDIGO DESCUBIERTO! Fin del juego.";
+            agregarAlHistorial(mensaje, claseColor);
+            document.getElementById('intento').disabled = true;
+            document.getElementById('btn-adivinar').disabled = true;
+            document.getElementById('titulo-turno').innerText = "¡Juego Terminado!";
+            return; 
+        } else if (aciertos === 0) {
+            mensaje += "Ningún acierto.";
+        } else {
+            mensaje += "Acertó " + aciertos + " número(s).";
+        }
+
+        agregarAlHistorial(mensaje, claseColor);
+
+        // Cambiar de turno y actualizar interfaz
+        turnoActual = (turnoActual === 1) ? 2 : 1;
+        actualizarTurnoUI();
+    }
+
+    function agregarAlHistorial(texto, clase) {
+        let historial = document.getElementById('historial');
+        let parrafo = document.createElement('p');
+        parrafo.className = clase;
+        parrafo.style.margin = "8px 0";
+        parrafo.innerText = texto;
+        historial.appendChild(parrafo);
+        historial.scrollTop = historial.scrollHeight;
+    }
+</script>
+
+</body>
+</html>
