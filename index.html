@@ -3,554 +3,599 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Adivina el Código 7</title>
+    <title>Adivina el Código - Deluxe</title>
     
-    <meta name="theme-color" content="#00a8ff">
+    <meta name="theme-color" content="#0ea5e9">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="white-translucent">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="El Código">
+    <link rel="manifest" href="manifest.json">
 
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;800&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/peerjs@1.5.2/dist/peerjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+    
     <style>
         :root {
-            /* PALETA DE COLORES DEL LOGO '7' */
-            --bg-body: #e6f4fc; 
-            
-            --blue-light: #00a8ff; 
-            --blue-dark: #008cd6; 
-            --blue-shadow: #006da6;
-            
-            --red-light: #ff4d4f; 
-            --red-dark: #e63946; 
-            --red-shadow: #b91c1c;
-            
-            --yellow-light: #ffb300; 
-            --yellow-dark: #f59e0b; 
-            --yellow-shadow: #d97706;
-
-            --green-light: #25d3a5; 
-            --green-dark: #10b981;
-            --green-shadow: #059669;
-
-            --text-main: #0f172a; 
-            --text-muted: #475569; 
-            --border-color: #cbd5e1;
+            /* Paleta extraída de la imagen */
+            --bg-body: #f0f9ff;       /* Celeste muy clarito para el fondo */
+            --bg-card: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --p1-color: #2dd4bf;      /* Turquesa/Cyan del globo superior */
+            --p2-color: #f43f5e;      /* Rojo/Coral del globo izquierdo */
+            --btn-bg: #0ea5e9;        /* Azul brillante del fondo del ícono */
+            --btn-hover: #0284c7;
+            --accent-yellow: #fbbf24; /* Amarillo del globo derecho */
+            --border-color: #e0f2fe;
+            --shadow-app: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
 
-        html, body { overscroll-behavior-y: none; }
-
-        body { font-family: 'Poppins', sans-serif; background: var(--bg-body); color: var(--text-main); text-align: center; margin: 0; padding: 20px 15px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; box-sizing: border-box; }
+        body { 
+            font-family: 'Poppins', sans-serif; 
+            background-color: var(--bg-body); 
+            color: var(--text-main); 
+            text-align: center; 
+            margin: 0; 
+            padding: 20px; 
+            min-height: 100vh; 
+            box-sizing: border-box; 
+        }
+        
+        .contenedor-principal { max-width: 800px; margin: 0 auto; }
+        
+        /* Título inspirado en el gran número 7 blanco */
+        h1 { 
+            display: inline-block;
+            background: var(--btn-bg);
+            color: white;
+            font-size: 32px; 
+            font-weight: 800; 
+            letter-spacing: -1px; 
+            margin-bottom: 30px; 
+            text-transform: uppercase; 
+            padding: 15px 35px;
+            border-radius: 25px;
+            box-shadow: 0 8px 20px rgba(14, 165, 233, 0.3);
+        }
+        
+        h2, h3 { font-weight: 600; margin-top: 0; margin-bottom: 10px; }
+        
+        /* Tarjetas con bordes más redondeados tipo app */
+        .tarjeta { 
+            background: var(--bg-card); 
+            padding: 30px 25px; 
+            border-radius: 24px; 
+            box-shadow: var(--shadow-app); 
+            border: none; 
+            max-width: 500px; 
+            margin: 0 auto; 
+            margin-bottom: 20px; 
+        }
+        
         .oculto { display: none !important; }
-        .contenedor { width: 100%; max-width: 500px; }
-
-        .logo-img { max-height: 140px; margin-bottom: 20px; object-fit: contain; filter: drop-shadow(0 15px 20px rgba(0, 168, 255, 0.25)); border-radius: 35px; }
         
-        button { border: none; border-radius: 50px; font-weight: 800; color: white; cursor: pointer; transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1); text-transform: uppercase; letter-spacing: 1px; }
-        button:active { transform: translateY(6px); }
-        button:disabled { filter: grayscale(100%); opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none !important; }
-
-        .btn-blue { background: linear-gradient(135deg, var(--blue-light), var(--blue-dark)); box-shadow: 0 6px 0px var(--blue-shadow), 0 10px 20px rgba(0, 168, 255, 0.3); }
-        .btn-blue:active { box-shadow: 0 0px 0px var(--blue-shadow), 0 4px 10px rgba(0, 168, 255, 0.3); }
+        #pantalla-juego { display: flex; flex-direction: column; align-items: center; gap: 15px; width: 100%; max-width: 600px; margin: 0 auto;}
         
-        .btn-red { background: linear-gradient(135deg, var(--red-light), var(--red-dark)); box-shadow: 0 6px 0px var(--red-shadow), 0 10px 20px rgba(255, 77, 79, 0.3); }
-        .btn-red:active { box-shadow: 0 0px 0px var(--red-shadow), 0 4px 10px rgba(255, 77, 79, 0.3); }
+        .marcador-superior { display: flex; justify-content: space-between; width: 100%; gap: 15px; }
         
-        .btn-yellow { background: linear-gradient(135deg, var(--yellow-light), var(--yellow-dark)); box-shadow: 0 6px 0px var(--yellow-shadow), 0 10px 20px rgba(255, 179, 0, 0.3); color: #fff; text-shadow: 1px 1px 0px rgba(0,0,0,0.1); }
-        .btn-yellow:active { box-shadow: 0 0px 0px var(--yellow-shadow), 0 4px 10px rgba(255, 179, 0, 0.3); }
-
-        .btn-green { background: linear-gradient(135deg, var(--green-light), var(--green-dark)); box-shadow: 0 6px 0px var(--green-shadow), 0 10px 20px rgba(37, 211, 165, 0.3); color: white; }
-        .btn-green:active { box-shadow: 0 0px 0px var(--green-shadow), 0 4px 10px rgba(37, 211, 165, 0.3); }
-
-        input[type="text"], input[type="number"], select { padding: 14px 16px; border-radius: 18px; border: 2px solid #cbd5e1; box-sizing: border-box; font-family: 'Poppins', sans-serif; text-align: center; outline: none; transition: 0.2s; font-size: 18px; font-weight: 800; color: var(--text-main); background: #f8fafc; width: 100%; letter-spacing: 2px;}
-        input:focus, select:focus { border-color: var(--blue-light); background: #fff; box-shadow: 0 0 0 4px rgba(0, 168, 255, 0.15); }
+        .panel-jugador { 
+            flex: 1; 
+            background: var(--bg-card); 
+            padding: 15px 10px; 
+            border-radius: 20px; 
+            box-shadow: var(--shadow-app); 
+            border: none; 
+            min-width: 0;
+            position: relative;
+            overflow: hidden;
+        }
         
-        .label-modern { display: block; text-align: left; font-size: 12px; font-weight: 900; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-
-        .tarjeta { background: white; padding: 25px 20px; border-radius: 32px; box-shadow: 0 15px 35px rgba(0, 168, 255, 0.08); margin-bottom: 20px; }
-        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        /* Líneas de color más gruesas para identificar jugadores */
+        .panel-jugador.j1 { border-top: 6px solid var(--p1-color); }
+        .panel-jugador.j2 { border-top: 6px solid var(--p2-color); }
+        .panel-jugador h3 { font-size: 16px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 800; }
         
-        .codigo-sala { font-family: monospace; font-size: 40px; font-weight: 900; color: var(--red-light); background: #fff1f2; padding: 15px; border-radius: 20px; letter-spacing: 12px; display: inline-block; margin: 10px 0 20px 0; border: 3px dashed var(--red-light); }
-        .alerta { color: var(--red-light); font-size: 13px; font-weight: 700; margin: 8px 0; min-height: 20px; }
+        .panel-central { 
+            width: 100%; 
+            background: var(--bg-card); 
+            padding: 30px 20px; 
+            border-radius: 24px; 
+            box-shadow: var(--shadow-app); 
+            border: none; 
+            box-sizing: border-box;
+        }
 
-        @keyframes fadeInSlide { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
-        .fade-in { animation: fadeInSlide 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-
-        .marcador { background: linear-gradient(135deg, var(--blue-light), var(--blue-dark)); color: white; padding: 15px 20px; border-radius: 24px; box-shadow: 0 8px 0px var(--blue-shadow); margin-bottom: 20px; border: 3px solid rgba(255,255,255,0.3); }
-        .marcador.rival { background: linear-gradient(135deg, var(--red-light), var(--red-dark)); box-shadow: 0 8px 0px var(--red-shadow); }
-
-        /* TABLERO DE NÚMEROS */
-        .tarjeta-juego { background: white; border: 3px solid var(--border-color); border-radius: 28px; padding: 20px 15px; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.03); }
+        .contenedor-rayas { display: flex; gap: 6px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
         
-        .display-intentos { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; max-height: 250px; overflow-y: auto; padding-right: 5px;}
-        .display-intentos::-webkit-scrollbar { width: 6px; }
-        .display-intentos::-webkit-scrollbar-track { background: #f1f5f9; border-radius: 10px; }
-        .display-intentos::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
-
-        .fila-intento { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 10px 15px; border-radius: 16px; border: 2px solid var(--border-color); }
-        .numero-intento { font-family: monospace; font-size: 22px; font-weight: 900; letter-spacing: 5px; color: var(--blue-dark); }
+        /* Cajas de los números más suaves */
+        .slot-box { 
+            width: 26px; 
+            height: 36px; 
+            background: #f8fafc; 
+            border-radius: 8px; 
+            font-size: 18px; 
+            font-weight: 800; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            border: 2px solid var(--border-color); 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+            color: var(--btn-bg);
+        }
         
-        .pistas-caja { display: flex; gap: 8px; }
-        .pista-badge { padding: 4px 10px; border-radius: 8px; font-size: 13px; font-weight: 900; color: white; }
-        .pista-verde { background: var(--green-light); box-shadow: 0 3px 0 var(--green-dark); }
-        .pista-amarilla { background: var(--yellow-light); box-shadow: 0 3px 0 var(--yellow-dark); }
+        /* Animación POP con los nuevos colores */
+        @keyframes pop {
+            0% { transform: scale(1); background-color: var(--accent-yellow); border-color: var(--accent-yellow); color: white;}
+            50% { transform: scale(1.3); background-color: var(--p1-color); border-color: var(--p1-color); color: white;}
+            100% { transform: scale(1); background-color: #f8fafc; border-color: var(--border-color); color: var(--btn-bg); }
+        }
+        .animacion-pop { animation: pop 0.6s ease; }
 
-        /* CONTROLES COMPACTOS NÚMEROS */
-        .panel-mando { background: #f1f5f9; padding: 15px; border-radius: 20px; border: 3px dashed #cbd5e1; display: flex; flex-direction: column; gap: 12px; align-items: center; }
-        .input-gigante { font-size: 30px !important; height: 60px; letter-spacing: 15px !important; text-align: center; }
+        input[type="number"], input[type="text"], select { 
+            padding: 15px; 
+            margin: 10px 0; 
+            font-size: 18px; 
+            border-radius: 12px; 
+            text-align: center; 
+            font-family: 'Poppins', sans-serif; 
+            background: #f8fafc; 
+            border: 2px solid var(--border-color); 
+            width: 100%; 
+            max-width: 280px; 
+            box-sizing: border-box; 
+            letter-spacing: 3px; 
+            font-weight: 800;
+            color: var(--text-main);
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus { outline: none; border-color: var(--btn-bg); }
         
-        .mis-secretos { background: #fff; border: 3px dashed var(--red-light); border-radius: 24px; padding: 20px; margin-top: 20px; text-align: center; box-shadow: 0 8px 15px rgba(255, 77, 79, 0.08);}
-        .numero-secreto-display { font-family: monospace; font-size: 32px; font-weight: 900; color: var(--text-main); letter-spacing: 8px; background: #f8fafc; padding: 10px; border-radius: 16px; border: 2px solid var(--border-color); margin-top: 10px;}
+        .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; font-size: 14px; color: var(--text-muted); font-weight: 500;}
+        .checkbox-container input { width: auto; margin: 0; cursor: pointer; transform: scale(1.2); accent-color: var(--btn-bg);}
 
-        @keyframes latido { 0% { transform: scale(1); } 50% { transform: scale(1.08); } 100% { transform: scale(1); } }
+        /* Botones estilo píldora (pill-shaped) */
+        button { 
+            background-color: var(--btn-bg); 
+            color: white; 
+            border: none; 
+            padding: 14px 28px; 
+            font-size: 16px; 
+            border-radius: 999px; 
+            cursor: pointer; 
+            font-weight: 600; 
+            margin-top: 15px; 
+            transition: all 0.2s; 
+            width: 100%; 
+            max-width: 280px; 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        button:hover { background-color: var(--btn-hover); transform: translateY(-2px); box-shadow: 0 6px 12px rgba(0,0,0,0.15);}
+        button:disabled { background-color: #cbd5e1; cursor: not-allowed; color: #94a3b8; transform: none; box-shadow: none;}
+
+        .btn-revancha { background-color: var(--p1-color); margin-bottom: 10px;}
+        .btn-revancha:hover { background-color: #14b8a6; }
+
+        .historial { 
+            background-color: #f8fafc; 
+            border-radius: 16px; 
+            padding: 20px; 
+            height: 220px; 
+            overflow-y: auto; 
+            text-align: left; 
+            margin-top: 25px; 
+            font-size: 14px; 
+            border: 2px solid var(--border-color); 
+        }
+        .mensaje-sistema { color: var(--text-muted); font-style: italic; text-align: center; margin: 10px 0; font-size: 13px;}
+        .turno-j1 { color: #0d9488; font-weight: 600; } /* Tono más oscuro del cyan para legibilidad */
+        .turno-j2 { color: #e11d48; font-weight: 600; } /* Tono más oscuro del coral para legibilidad */
+        .alerta { color: #e11d48; font-size: 14px; font-weight: 600; margin-bottom: 10px; min-height: 20px;}
+        
+        .codigo-sala { 
+            font-family: 'Poppins', sans-serif; 
+            font-size: 28px; 
+            font-weight: 800; 
+            color: var(--btn-bg); 
+            background: var(--border-color); 
+            padding: 12px 25px; 
+            border-radius: 12px; 
+            display: inline-block; 
+            letter-spacing: 4px; 
+        }
+        hr { border: 0; border-top: 2px dashed var(--border-color); margin: 25px 0; }
+
+        @media (max-width: 400px) {
+            .slot-box { width: 20px; height: 28px; font-size: 14px; }
+            .contenedor-rayas { gap: 3px; }
+            h1 { font-size: 24px; padding: 12px 25px; }
+            .panel-jugador h3 { font-size: 14px; }
+        }
     </style>
 </head>
 <body>
 
-<div class="contenedor">
+<div class="contenedor-principal">
+    <h1>Adivina el Código</h1>
 
-    <div id="pantalla-inicio" class="fade-in" style="margin-top: 2vh; width: 100%;">
-        <img src="icono-512.png" alt="Logo 7" class="logo-img" onerror="this.style.display='none'">
-        <div class="tarjeta">
-            <h1 style="margin: 0 0 20px 0; font-size: 26px; font-weight: 900; color: var(--blue-dark); letter-spacing: -1px;">Adivina el Código</h1>
-            <div style="text-align: left; margin-bottom: 25px;">
-                <label class="label-modern">Tu Apodo</label>
-                <input type="text" id="input-nombre" placeholder="Ej. Rompecódigos" autocomplete="off" maxlength="12">
-            </div>
-            <div class="grid-2">
-                <button onclick="mostrarHost()" class="btn-blue" style="width: 100%; padding: 18px 0; font-size: 15px;">🛠️ Crear Sala</button>
-                <button onclick="mostrarGuest()" class="btn-red" style="width: 100%; padding: 18px 0; font-size: 15px;">🎮 Unirse</button>
-            </div>
-        </div>
+    <div id="pantalla-inicio" class="tarjeta">
+        <label style="font-weight: 600; color: var(--text-main); font-size: 18px;">¿Cuál es tu nombre?</label><br>
+        <input type="text" id="input-nombre" placeholder="Tu nombre aquí" autocomplete="off">
+        <hr>
+        <p style="color: var(--text-muted); font-size: 15px; font-weight: 500;">¿Qué deseas hacer?</p>
+        <button onclick="mostrarHost()" style="background-color: var(--p1-color); color: #0f172a;">Crear Sala (Host)</button>
+        <button onclick="mostrarGuest()" style="background-color: var(--p2-color);">Unirse a Sala</button>
+        
+        <button id="btn-recuperar" onclick="recuperarPartida()" class="oculto" style="background-color: var(--accent-yellow); color: #0f172a; margin-top: 25px;">🔄 Recuperar Partida</button>
     </div>
 
-    <div id="pantalla-host" class="tarjeta oculto fade-in">
-        <div id="host-paso1">
-            <h2 style="margin: 0 0 20px 0; font-size: 24px; font-weight: 900; color: var(--blue-dark);">Configurar Partida</h2>
-            
-            <div style="text-align: left; margin-bottom: 25px; background: #e0f2fe; padding: 18px; border-radius: 20px; border: 3px dashed var(--blue-light);">
-                <label class="label-modern" style="color: var(--blue-dark);">🔢 Longitud del Código</label>
-                <select id="host-longitud" style="border-color: var(--blue-light); color: var(--blue-dark); font-weight: 900; font-size: 18px;">
-                    <option value="4">4 Dígitos (Fácil)</option>
-                    <option value="5">5 Dígitos (Normal)</option>
-                    <option value="6">6 Dígitos (Difícil)</option>
-                    <option value="7">7 Dígitos (Experto)</option>
-                    <option value="8">8 Dígitos (Locura)</option>
-                    <option value="9">9 Dígitos (Imposible)</option>
-                </select>
-            </div>
-            <button onclick="hostGenerarCodigo()" class="btn-yellow" style="width: 100%; padding: 18px; font-size: 16px;">Siguiente Paso ➔</button>
+    <div id="pantalla-host" class="tarjeta oculto">
+        <h3 style="color: var(--btn-bg); font-size: 22px;">Sala Creada</h3>
+        <p style="font-weight: 500;">Tu Código de Sala es:</p>
+        <div class="codigo-sala" id="mostrar-codigo">Cargando...</div>
+        <hr>
+        <label style="font-weight: 600;">Longitud del código:</label><br>
+        <select id="host-longitud">
+            <option value="4">4 Números</option>
+            <option value="5">5 Números</option>
+            <option value="6">6 Números</option>
+            <option value="7">7 Números</option>
+            <option value="8">8 Números</option>
+            <option value="9">9 Números</option>
+        </select>
+        
+        <div class="checkbox-container">
+            <input type="checkbox" id="regla-unicos" checked>
+            <label for="regla-unicos">No permitir números repetidos</label>
         </div>
         
-        <div id="host-paso2" class="oculto fade-in">
-            <label class="label-modern" style="text-align: center;">Código de Invitación</label>
-            <div class="codigo-sala" id="mostrar-codigo">...</div>
-            
-            <div style="display: flex; gap: 8px; justify-content: center; margin-bottom: 25px; width: 100%;">
-                <button onclick="copiarCodigo()" class="btn-blue" style="padding: 12px 15px; font-size: 13px; border-radius: 14px; box-shadow: 0 5px 0px var(--blue-shadow);">📋 Copiar</button>
-                <button onclick="compartirCodigo()" class="btn-green" style="padding: 12px 15px; font-size: 13px; border-radius: 14px; box-shadow: 0 5px 0px var(--green-shadow); flex: 1;">💬 Compartir</button>
-            </div>
+        <br>
+        <label style="font-weight: 600;">Tu Código Secreto:</label><br>
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="host-secreto" placeholder="Tus números" autocomplete="off">
+        <p id="error-host" class="alerta"></p>
 
-            <div style="background:#f8fafc; padding:20px; border-radius:24px; border: 3px solid var(--border-color); margin-bottom: 15px;">
-                <label class="label-modern">Ingresa tu Código Secreto</label>
-                <input type="text" id="host-secreto" placeholder="1234..." autocomplete="off" class="input-gigante" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            </div>
-            <p id="error-host" class="alerta"></p>
-            <button id="btn-esperar" onclick="hostGuardarSecreto()" class="btn-blue" style="width: 100%; padding: 18px; font-size: 16px;" disabled>Esperando Rival...</button>
-        </div>
+        <button id="btn-esperar" onclick="hostEsperarJugador()" disabled>Esperando a tu rival...</button>
     </div>
 
-    <div id="pantalla-guest" class="tarjeta oculto fade-in">
+    <div id="pantalla-guest" class="tarjeta oculto">
+        <h3 style="color: var(--p2-color); font-size: 22px;">Unirse a Sala</h3>
+        
         <div id="guest-paso1">
-            <h2 style="margin: 0 0 20px 0; font-size: 24px; font-weight: 900; color: var(--red-light);">Unirse a Sala</h2>
-            <label class="label-modern">Ingresa el Código</label>
-            <input type="text" id="guest-codigo" placeholder="ABCD" maxlength="4" style="font-size: 34px; width: 100%; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 8px; padding: 20px;">
+            <label style="font-weight: 600;">Código de la Sala:</label><br>
+            <input type="text" id="guest-codigo-sala" placeholder="Ej. ABCD" style="text-transform: uppercase;" autocomplete="off">
             <p id="error-guest-conexion" class="alerta"></p>
-            <button onclick="guestConectar()" class="btn-yellow" style="width: 100%; padding: 18px; font-size: 16px;">Conectar Ahora ➔</button>
+            <button onclick="guestConectar()" style="background-color: var(--p2-color);">Conectar</button>
         </div>
-        <div id="guest-paso2" class="oculto fade-in">
-            <div style="background: var(--blue-light); color: white; padding: 15px; border-radius: 16px; margin-bottom: 25px; font-weight: 800; font-size: 16px;">
-                Adivinarán un código de <span id="guest-mostrar-num" style="font-weight: 900; font-size: 22px; color: var(--yellow-light);"></span> dígitos.
-            </div>
-            <div style="background:#f8fafc; padding:20px; border-radius:24px; border: 3px solid var(--border-color); margin-bottom: 15px;">
-                <label class="label-modern">Ingresa tu Código Secreto</label>
-                <input type="text" id="guest-secreto" placeholder="1234..." autocomplete="off" class="input-gigante" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-            </div>
-            <p id="error-guest" class="alerta"></p>
-            <button id="btn-guest-listo" onclick="guestGuardarSecreto()" class="btn-blue" style="width: 100%; padding: 18px; font-size: 16px;">¡Listo para Jugar!</button>
+
+        <div id="guest-paso2" class="oculto">
+            <p style="color: var(--p1-color); font-weight: 800; font-size: 18px;">¡Conectado con <span id="nombre-rival-guest"></span>!</p>
+            <p style="font-size: 15px; color: var(--text-muted); background: #f8fafc; padding: 10px; border-radius: 8px;">Jugaremos con <span id="guest-mostrar-longitud" style="font-weight: 800; color: var(--text-main);"></span> números.<br><span id="guest-regla-texto"></span></p>
+            <label style="font-weight: 600;">Tu Código Secreto:</label><br>
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Tus números" autocomplete="off">
+            <p id="error-guest-juego" class="alerta"></p>
+            <button onclick="guestEnviarSecreto()" style="background-color: var(--p2-color);">¡Listo para Jugar!</button>
         </div>
     </div>
 
-    <div id="pantalla-juego" class="oculto fade-in" style="width: 100%;">
-        <div class="marcador" id="caja-marcador">
-            <h2 id="titulo-turno" style="margin:0; font-size: 22px; font-weight: 900;">Prepárate...</h2>
-            <p id="subtitulo-turno" style="margin: 5px 0 0 0; font-size: 14px; font-weight: 700; opacity: 0.9;">Iniciando conexión</p>
-        </div>
-
-        <div id="zona-revancha" class="oculto fade-in" style="margin-bottom: 20px;">
-            <button onclick="solicitarRevancha()" class="btn-yellow" style="width: 100%; padding: 20px; font-size: 18px; animation: latido 1.5s infinite;">🔄 ¡JUGAR REVANCHA!</button>
-        </div>
-
-        <div class="tarjeta-juego">
-            <h3 style="margin: 0 0 15px 0; font-size: 14px; color: var(--text-muted); text-transform: uppercase; font-weight: 900;">Historial de Intentos</h3>
-            <div class="display-intentos" id="historial-intentos">
-                </div>
-
-            <div class="panel-mando" id="panel-juego">
-                <label class="label-modern">Tu Intento</label>
-                <input type="text" id="input-adivinar" class="input-gigante" autocomplete="off" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                <button onclick="intentarAdivinar()" class="btn-blue" style="width: 100%; padding: 18px; font-size: 18px; margin-top: 5px;">PROBAR CÓDIGO</button>
+    <div id="pantalla-juego" class="oculto">
+        <div class="marcador-superior">
+            <div class="panel-jugador j1">
+                <h3 id="ui-nombre-j1" style="color: #0d9488;">Jugador 1</h3>
+                <div id="rayas-j1" class="contenedor-rayas"></div>
+            </div>
+            <div class="panel-jugador j2">
+                <h3 id="ui-nombre-j2" style="color: #e11d48;">Jugador 2</h3>
+                <div id="rayas-j2" class="contenedor-rayas"></div>
             </div>
         </div>
 
-        <div class="tarjeta-juego" style="background: #f8fafc;">
-            <h3 style="margin: 0 0 10px 0; font-size: 14px; color: var(--red-light); text-transform: uppercase; font-weight: 900;">Progreso del Rival</h3>
-            <p id="estado-rival" style="font-size: 14px; font-weight: 700; margin: 0; color: var(--text-main);">Intentos: 0</p>
-        </div>
-        
-        <div class="mis-secretos" id="zona-mis-secretos">
-            <h3 style="margin:0; font-size:14px; text-transform:uppercase; color: var(--red-dark); font-weight: 900;">Tu Código Defensor</h3>
-            <div class="numero-secreto-display" id="mi-codigo-display">0000</div>
-        </div>
+        <div class="panel-central">
+            <h2 id="titulo-turno" style="font-size: 22px; font-weight: 800;">Turno del Jugador</h2>
+            <p id="mensaje-estado" style="color: var(--text-muted); font-size: 15px;">Ingresa <span id="mostrar-longitud-juego" style="font-weight: 800; color: var(--text-main);"></span> números:</p>
+            
+            <input type="text" inputmode="numeric" pattern="[0-9]*" id="intento" placeholder="Tu intento..." autocomplete="off">
+            <br>
+            <button id="btn-adivinar" onclick="enviarIntento()">Adivinar</button>
+            <p id="error-juego" class="alerta"></p>
 
-        <button onclick="volverAlInicio()" class="btn-red" style="margin-top: 30px; font-size: 13px; padding: 12px 24px; border-radius: 14px; box-shadow: none;">Salir al Menú</button>
+            <div class="historial" id="historial"></div>
+            
+            <div id="zona-revancha" class="oculto" style="margin-top: 25px;">
+                <button class="btn-revancha" onclick="solicitarRevancha()">¡Jugar Revancha!</button>
+                <button onclick="salirJuegoDefinitivo()" style="background-color: white; color: var(--text-muted); border: 2px solid var(--border-color); box-shadow: none;">Salir del Juego</button>
+            </div>
+        </div>
     </div>
-
 </div>
 
 <script>
-    let peer = null, conn = null, miRol = 0, miNombre = "Jugador", nombreRival = "Rival";
-    let lenCodigo = 4, turnoActual = 1;
-    let miCodigoSecreto = "", codigoRival = "";
-    let misIntentos = [], intentosRival = 0;
-    let enJuegoActivo = false;
-
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    let ctx = null; try { ctx = new AudioCtx(); } catch(e) {}
-    
-    function playSound(t) { 
-        if (!ctx) return;
-        if (ctx.state === 'suspended') ctx.resume(); 
-        const o = ctx.createOscillator(), g = ctx.createGain(); o.connect(g); g.connect(ctx.destination); const n = ctx.currentTime; 
-        if (t==='acierto'){ o.type='sine'; o.frequency.setValueAtTime(880,n); g.gain.setValueAtTime(0.1,n); o.start(); o.stop(n+0.1); } 
-        else if (t==='error'){ o.type='square'; o.frequency.setValueAtTime(150,n); g.gain.setValueAtTime(0.05,n); o.start(); o.stop(n+0.2); } 
-        else if (t==='win') { [523, 659, 783].forEach((f,i)=>{ const osc=ctx.createOscillator(), ga=ctx.createGain(); osc.connect(ga); ga.connect(ctx.destination); osc.frequency.setValueAtTime(f,n+(i*0.1)); ga.gain.setValueAtTime(0.1,n+(i*0.1)); osc.start(n+(i*0.1)); osc.stop(n+(i*0.1)+0.3); }); } 
-        else if (t==='lose'){ o.type='sawtooth'; o.frequency.setValueAtTime(300,n); o.frequency.linearRampToValueAtTime(100,n+0.5); g.gain.setValueAtTime(0.1,n); o.start(); o.stop(n+0.5); } 
-    }
-    function vibrate(t) { if (!("vibrate" in navigator)) return; if (t === 'error') navigator.vibrate(100); if (t === 'lose') navigator.vibrate([200, 100, 400]); }
-
-    function copiarCodigo() {
-        let code = document.getElementById('mostrar-codigo').innerText;
-        navigator.clipboard.writeText(code).then(() => { alert("¡Código copiado: " + code + "!"); });
-    }
-
-    function compartirCodigo() {
-        let code = document.getElementById('mostrar-codigo').innerText;
-        let texto = `¡Adivina mi código! Únete a la partida con el código: ${code}`;
-        if (navigator.share) {
-            navigator.share({ title: 'Adivina el Código', text: texto }).catch(err => console.log('Error:', err));
-        } else {
-            window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
+    // PREVENIR CIERRES ACCIDENTALES
+    window.addEventListener('beforeunload', function (e) {
+        if (miRol !== 0 && document.getElementById('pantalla-juego').classList.contains('oculto') === false) {
+            e.preventDefault(); e.returnValue = '';
         }
+    });
+
+    // MOSTRAR BOTÓN DE RECUPERAR SI HAY PARTIDA GUARDADA
+    window.addEventListener('load', function() {
+        if(localStorage.getItem('adivinaCodigoGuardado')) {
+            document.getElementById('btn-recuperar').classList.remove('oculto');
+        }
+    });
+
+    let peer = null; let conn = null;
+    let miRol = 0; let miNombre = "Jugador"; let nombreRival = "Rival";
+    let miSecreto = ""; let secretoRival = "";
+    let longitudJuego = 4; let turnoActual = 1; let reglaUnicos = true;
+    let descubiertoJ1 = []; let descubiertoJ2 = [];
+
+    // --- SISTEMA DE SONIDO ---
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    let audioCtx;
+    function reproducirSonido(tipo) {
+        try {
+            if (!audioCtx) audioCtx = new AudioContext();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            let osc = audioCtx.createOscillator(); let gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            
+            if (tipo === 'turno') { osc.type = 'sine'; osc.frequency.setValueAtTime(600, audioCtx.currentTime); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.1); } 
+            else if (tipo === 'acierto') { osc.type = 'triangle'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.1); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.15); } 
+            else if (tipo === 'ganar') { osc.type = 'square'; osc.frequency.setValueAtTime(400, audioCtx.currentTime); osc.frequency.setValueAtTime(600, audioCtx.currentTime + 0.1); osc.frequency.setValueAtTime(800, audioCtx.currentTime + 0.3); gain.gain.setValueAtTime(0.1, audioCtx.currentTime); osc.start(); osc.stop(audioCtx.currentTime + 0.5); }
+        } catch(e) {}
     }
 
-    function guardarNombre() { let n = document.getElementById('input-nombre').value.trim(); if(n) miNombre = n; }
-    
-    function mostrarHost() { 
-        guardarNombre(); miRol=1; 
-        document.getElementById('pantalla-inicio').classList.add('oculto'); 
-        document.getElementById('pantalla-host').classList.remove('oculto'); 
-        try { history.pushState({p:'host'}, "", "#host"); } catch(e){}
-    }
-    
-    function mostrarGuest() { 
-        guardarNombre(); miRol=2; 
-        document.getElementById('pantalla-inicio').classList.add('oculto'); 
-        document.getElementById('pantalla-guest').classList.remove('oculto'); 
-        peer = new Peer(); 
-        try { history.pushState({p:'guest'}, "", "#guest"); } catch(e){}
+    // --- AUTO-GUARDADO ---
+    function guardarEstado() {
+        if(miRol === 0 || secretoRival === "") return;
+        let estado = {
+            rol: miRol, nombre: miNombre, rival: nombreRival, miS: miSecreto, rivS: secretoRival,
+            long: longitudJuego, turno: turnoActual, regla: reglaUnicos,
+            dj1: descubiertoJ1, dj2: descubiertoJ2,
+            historial: document.getElementById('historial').innerHTML,
+            sala: (miRol === 1) ? document.getElementById('mostrar-codigo').innerText : document.getElementById('guest-codigo-sala').value.toUpperCase()
+        };
+        localStorage.setItem('adivinaCodigoGuardado', JSON.stringify(estado));
     }
 
-    function volverAlInicio() {
-        if(conn) { conn.close(); conn = null; }
-        if(peer) { peer.destroy(); peer = null; }
+    function salirJuegoDefinitivo() {
+        localStorage.removeItem('adivinaCodigoGuardado');
         location.reload();
     }
 
-    function hostGenerarCodigo() { 
-        lenCodigo = parseInt(document.getElementById('host-longitud').value);
-        document.getElementById('host-paso1').classList.add('oculto');
-        document.getElementById('host-paso2').classList.remove('oculto');
+    // --- LÓGICA DE RECUPERACIÓN DE PARTIDA ---
+    function recuperarPartida() {
+        let estado = JSON.parse(localStorage.getItem('adivinaCodigoGuardado'));
         
-        let inSec = document.getElementById('host-secreto');
-        inSec.maxLength = lenCodigo;
-        inSec.placeholder = "0".repeat(lenCodigo);
+        miRol = estado.rol; miNombre = estado.nombre; nombreRival = estado.rival;
+        miSecreto = estado.miS; secretoRival = estado.rivS;
+        longitudJuego = estado.long; turnoActual = estado.turno; reglaUnicos = estado.regla;
+        descubiertoJ1 = estado.dj1; descubiertoJ2 = estado.dj2;
 
-        try { history.pushState({p:'espera'}, "", "#espera"); } catch(e){}
-        
-        let btnEspera = document.getElementById('btn-esperar');
-        btnEspera.innerText = "Esperando Conexión...";
+        document.getElementById('pantalla-inicio').classList.add('oculto');
+        document.getElementById('pantalla-juego').classList.remove('oculto');
+        document.getElementById('historial').innerHTML = estado.historial;
+        document.getElementById('ui-nombre-j1').innerText = (miRol === 1) ? miNombre + " (Tú)" : nombreRival;
+        document.getElementById('ui-nombre-j2').innerText = (miRol === 2) ? miNombre + " (Tú)" : nombreRival;
+        document.getElementById('mostrar-longitud-juego').innerText = longitudJuego;
 
-        if(!peer) {
-            let r = Math.random().toString(36).substring(2,6).toUpperCase();
-            peer = new Peer('c7-'+r);
-            peer.on('open', id => document.getElementById('mostrar-codigo').innerText = r);
-            peer.on('connection', c => { 
-                conn = c; 
-                conn.on('open', () => {
-                    configMensajes();
-                    btnEspera.innerText="¡Rival Conectado! Iniciar Partida"; 
-                    btnEspera.disabled=false; 
+        dibujarSlots('rayas-j1', descubiertoJ1); dibujarSlots('rayas-j2', descubiertoJ2);
+        actualizarTurnoUI();
+        agregarAlHistorial("🔄 <i>Restaurando partida. Intentando reconectar...</i>", "mensaje-sistema");
+
+        if (miRol === 1) {
+            document.getElementById('mostrar-codigo').innerText = estado.sala;
+            peer = new Peer('sala-' + estado.sala);
+            peer.on('connection', function(conexionEntrante) {
+                conn = conexionEntrante; configurarMensajesComunes();
+                agregarAlHistorial("✅ <i>¡Rival reconectado con éxito!</i>", "mensaje-sistema");
+            });
+        } else {
+            document.getElementById('guest-codigo-sala').value = estado.sala;
+            peer = new Peer();
+            peer.on('open', function() {
+                conn = peer.connect('sala-' + estado.sala);
+                conn.on('open', function() {
+                    configurarMensajesComunes();
+                    agregarAlHistorial("✅ <i>¡Conectado con el Host nuevamente!</i>", "mensaje-sistema");
                 });
             });
         }
     }
 
-    function hostGuardarSecreto() { 
-        let sec = document.getElementById('host-secreto').value;
-        if(sec.length !== lenCodigo) {
-            document.getElementById('error-host').innerText = `Debe tener exactamente ${lenCodigo} números.`;
-            return;
-        }
-        miCodigoSecreto = sec;
-        conn.send({tipo:'INIT_GAME', len:lenCodigo, nombre:miNombre}); 
-        document.getElementById('btn-esperar').innerText="Esperando código rival..."; 
-        document.getElementById('btn-esperar').disabled=true; 
-        document.getElementById('error-host').innerText = "";
+    function tieneRepetidos(str) { return new Set(str).size !== str.length; }
+    function validarCodigo(codigo, longitud, unicos, idError) {
+        let err = document.getElementById(idError);
+        if (codigo.length !== longitud) { err.innerText = `Debe tener exactamente ${longitud} números.`; return false; }
+        if (unicos && tieneRepetidos(codigo)) { err.innerText = "¡La regla indica que NO puedes repetir números!"; return false; }
+        err.innerText = ""; return true;
     }
 
-    function guestConectar() { 
-        let c = document.getElementById('guest-codigo').value.toUpperCase(); if(!c) return; 
-        document.getElementById('error-guest-conexion').innerText="Conectando..."; 
-        conn = peer.connect('c7-'+c); 
-        conn.on('open', ()=>{ 
-            document.getElementById('error-guest-conexion').innerText=""; 
-            configMensajes();
-            conn.send({tipo: 'REQ_HANDSHAKE', nombre: miNombre});
-        }); 
-        peer.on('error', ()=> document.getElementById('error-guest-conexion').innerText="Sala no encontrada."); 
+    function guardarNombre() { let input = document.getElementById('input-nombre').value.trim(); if(input !== "") miNombre = input; }
+
+    function mostrarHost() { guardarNombre(); miRol = 1; document.getElementById('pantalla-inicio').classList.add('oculto'); document.getElementById('pantalla-host').classList.remove('oculto'); inicializarPeerHost(); }
+    function mostrarGuest() { guardarNombre(); miRol = 2; document.getElementById('pantalla-inicio').classList.add('oculto'); document.getElementById('pantalla-guest').classList.remove('oculto'); peer = new Peer(); }
+
+    function inicializarPeerHost() {
+        let codigoRoom = Math.random().toString(36).substring(2, 6).toUpperCase();
+        peer = new Peer('sala-' + codigoRoom);
+        peer.on('open', function(id) { document.getElementById('mostrar-codigo').innerText = codigoRoom; });
+        peer.on('connection', function(conexionEntrante) {
+            conn = conexionEntrante; configurarMensajesComunes();
+            document.getElementById('btn-esperar').innerText = "¡Jugador 2 conectado! Iniciar Juego";
+            document.getElementById('btn-esperar').disabled = false; document.getElementById('btn-esperar').style.backgroundColor = "var(--p1-color)"; document.getElementById('btn-esperar').style.color = "#0f172a";
+        });
     }
 
-    function guestGuardarSecreto() { 
-        let sec = document.getElementById('guest-secreto').value;
-        if(sec.length !== lenCodigo) {
-            document.getElementById('error-guest').innerText = `Debe tener exactamente ${lenCodigo} números.`;
-            return;
-        }
-        miCodigoSecreto = sec;
-        conn.send({tipo:'SECRET_GUEST', secreto:miCodigoSecreto, nombre:miNombre}); 
-        document.getElementById('caja-inputs-guest-clasico').innerHTML="<div style='padding:25px; background:#e6f4fc; border-radius:20px; font-weight:900; color:var(--blue-dark); text-align:center; border: 3px dashed var(--blue-light);'>Esperando al Host...</div>"; 
+    function hostEsperarJugador() {
+        longitudJuego = parseInt(document.getElementById('host-longitud').value);
+        reglaUnicos = document.getElementById('regla-unicos').checked;
+        miSecreto = document.getElementById('host-secreto').value;
+        if (!validarCodigo(miSecreto, longitudJuego, reglaUnicos, 'error-host')) return;
+        conn.send({ tipo: 'INIT', longitud: longitudJuego, unicos: reglaUnicos, nombre: miNombre });
+        document.getElementById('btn-esperar').innerText = "Esperando código del rival..."; document.getElementById('btn-esperar').disabled = true;
     }
 
-    function configMensajes() {
-        conn.on('data', d => {
-            if (d.tipo === 'REQ_HANDSHAKE' && miRol === 1) {
-                nombreRival = d.nombre;
-                // El host no manda la config hasta que presione el boton de iniciar
-            }
-            else if(d.tipo==='INIT_GAME' && miRol===2) {
-                lenCodigo = d.len; nombreRival = d.nombre;
+    function guestConectar() {
+        let codigo = document.getElementById('guest-codigo-sala').value.toUpperCase(); if (codigo === "") return;
+        document.getElementById('error-guest-conexion').innerText = "Conectando...";
+        conn = peer.connect('sala-' + codigo);
+        conn.on('open', function() { document.getElementById('error-guest-conexion').innerText = ""; configurarMensajesComunes(); });
+        peer.on('error', function() { document.getElementById('error-guest-conexion').innerText = "Sala no encontrada."; });
+    }
+
+    function guestEnviarSecreto() {
+        miSecreto = document.getElementById('guest-secreto').value;
+        if (!validarCodigo(miSecreto, longitudJuego, reglaUnicos, 'error-guest-juego')) return;
+        conn.send({ tipo: 'SECRET', secreto: miSecreto, nombre: miNombre });
+        document.getElementById('guest-paso2').innerHTML = "<p>Esperando al Host...</p>";
+    }
+
+    function configurarMensajesComunes() {
+        conn.on('data', function(datos) {
+            if (datos.tipo === 'INIT' && miRol === 2) {
+                longitudJuego = datos.longitud; reglaUnicos = datos.unicos; nombreRival = datos.nombre;
                 document.getElementById('guest-paso1').classList.add('oculto'); document.getElementById('guest-paso2').classList.remove('oculto');
-                document.getElementById('guest-mostrar-num').innerText = lenCodigo;
-                
-                let inSec = document.getElementById('guest-secreto');
-                inSec.maxLength = lenCodigo; inSec.placeholder = "0".repeat(lenCodigo);
-                try { history.pushState({p:'espera'}, "", "#espera"); } catch(e){}
-            }
-            else if(d.tipo==='SECRET_GUEST' && miRol===1){ 
-                codigoRival = d.secreto; 
-                turnoActual = Math.random() < 0.5 ? 1 : 2; 
-                conn.send({tipo:'START_GAME', turno:turnoActual, secretoHost:miCodigoSecreto}); 
-                iniciarTablero(); 
-            }
-            else if(d.tipo==='START_GAME' && miRol===2){ 
-                codigoRival = d.secretoHost; 
-                turnoActual = d.turno; 
-                iniciarTablero(); 
-            }
-            else if(d.tipo==='GUESS'){ 
-                procesarIntentoRival(d.intento, d.win); 
-            }
-            else if(d.tipo==='REMATCH_REQ'){ prepararRevancha(); }
+                document.getElementById('nombre-rival-guest').innerText = nombreRival; document.getElementById('guest-mostrar-longitud').innerText = longitudJuego;
+                document.getElementById('guest-regla-texto').innerText = reglaUnicos ? "Regla: Sin números repetidos." : "Regla: Se permiten repetidos.";
+            } 
+            else if (datos.tipo === 'SECRET' && miRol === 1) {
+                secretoRival = datos.secreto; nombreRival = datos.nombre;
+                turnoActual = Math.random() < 0.5 ? 1 : 2;
+                conn.send({ tipo: 'START', turno: turnoActual, secretoHost: miSecreto });
+                iniciarTablero();
+            } 
+            else if (datos.tipo === 'START' && miRol === 2) {
+                turnoActual = datos.turno; secretoRival = datos.secretoHost; iniciarTablero();
+            } 
+            else if (datos.tipo === 'GUESS') { procesarIntento(datos.intento, (miRol === 1 ? 2 : 1)); }
+            else if (datos.tipo === 'REMATCH_REQ') { prepararRevancha(); if(miRol === 1) hostEsperarJugador(); }
         });
     }
 
     function iniciarTablero() {
-        try { history.pushState({p:'juego'}, "", "#juego"); } catch(e){}
-        enJuegoActivo=true; 
-        misIntentos = []; intentosRival = 0;
-        
-        document.querySelectorAll('.tarjeta, #pantalla-inicio').forEach(e=>e.classList.add('oculto')); 
+        document.getElementById('pantalla-host').classList.add('oculto'); document.getElementById('pantalla-guest').classList.add('oculto');
+        document.getElementById('zona-revancha').classList.add('oculto'); document.getElementById('historial').innerHTML = ''; 
         document.getElementById('pantalla-juego').classList.remove('oculto');
+
+        document.getElementById('ui-nombre-j1').innerText = (miRol === 1) ? miNombre + " (Tú)" : nombreRival;
+        document.getElementById('ui-nombre-j2').innerText = (miRol === 2) ? miNombre + " (Tú)" : nombreRival;
+
+        descubiertoJ1 = Array(longitudJuego).fill(''); descubiertoJ2 = Array(longitudJuego).fill('');
+        dibujarSlots('rayas-j1', descubiertoJ1); dibujarSlots('rayas-j2', descubiertoJ2);
         
-        let inAdivinar = document.getElementById('input-adivinar');
-        inAdivinar.maxLength = lenCodigo;
-        inAdivinar.placeholder = "0".repeat(lenCodigo);
-        
-        document.getElementById('mi-codigo-display').innerText = miCodigoSecreto;
-        document.getElementById('historial-intentos').innerHTML = "";
-        document.getElementById('estado-rival').innerText = "Intentos: 0";
-        document.getElementById('panel-juego').classList.remove('oculto');
-        
-        updateUI();
+        document.getElementById('mostrar-longitud-juego').innerText = longitudJuego;
+        agregarAlHistorial("🏁 Partida iniciada. Empieza " + ((turnoActual === miRol) ? "tú" : nombreRival), "mensaje-sistema");
+        actualizarTurnoUI();
+        guardarEstado(); 
     }
 
-    function updateUI() {
-        if(turnoActual===0) return;
-        let mio = (turnoActual === miRol);
-        
-        let inAdivinar = document.getElementById('input-adivinar');
-        let btnAdivinar = document.querySelector('#panel-juego button');
-        
-        inAdivinar.disabled = !mio;
-        btnAdivinar.disabled = !mio;
-
-        const m = document.getElementById('caja-marcador');
-        if(mio){ 
-            document.getElementById('titulo-turno').innerText="¡TU TURNO!"; 
-            m.className="marcador"; 
-        } else { 
-            document.getElementById('titulo-turno').innerText=`Turno de ${nombreRival}`; 
-            m.className="marcador rival"; 
+    function dibujarSlots(idContenedor, arrayDescubierto, indiceAnimar = -1) {
+        let contenedor = document.getElementById(idContenedor); contenedor.innerHTML = ''; 
+        for (let i = 0; i < arrayDescubierto.length; i++) {
+            let divSlot = document.createElement('div'); divSlot.className = 'slot-box'; divSlot.innerText = arrayDescubierto[i];
+            if (i === indiceAnimar) divSlot.classList.add('animacion-pop');
+            contenedor.appendChild(divSlot);
         }
     }
 
-    function evaluarIntento(intento, secreto) {
-        let exactos = 0;
-        let desordenados = 0;
-        let intArr = intento.split('');
-        let secArr = secreto.split('');
-        
-        // Primero buscar exactos (verdes)
-        for(let i=0; i<lenCodigo; i++){
-            if(intArr[i] === secArr[i]){
-                exactos++;
-                intArr[i] = null; secArr[i] = null; // Marcar como usado
+    function actualizarTurnoUI() {
+        let titulo = document.getElementById('titulo-turno'); let input = document.getElementById('intento'); let boton = document.getElementById('btn-adivinar');
+        input.value = ""; document.getElementById('error-juego').innerText = "";
+
+        if (turnoActual === miRol) {
+            reproducirSonido('turno'); 
+            titulo.innerText = "¡Es tu turno!"; titulo.style.color = miRol === 1 ? "var(--p1-color)" : "var(--p2-color)";
+            input.disabled = false; boton.disabled = false; input.focus();
+        } else {
+            titulo.innerText = `Turno de ${nombreRival}...`; titulo.style.color = "var(--text-muted)";
+            input.disabled = true; boton.disabled = true;
+        }
+    }
+
+    function enviarIntento() {
+        let intento = document.getElementById('intento').value;
+        if (!validarCodigo(intento, longitudJuego, reglaUnicos, 'error-juego')) return;
+        reproducirSonido('acierto'); procesarIntento(intento, miRol);
+        conn.send({ tipo: 'GUESS', intento: intento });
+    }
+
+    function procesarIntento(intentoStr, quienHizoElIntento) {
+        let aciertos = 0; let indexAnimado = -1;
+        let codigoAComparar = (quienHizoElIntento === miRol) ? secretoRival : miSecreto;
+        let esJ1 = (quienHizoElIntento === 1);
+        let arrayDestino = esJ1 ? descubiertoJ2 : descubiertoJ1;
+        let idContenedor = esJ1 ? 'rayas-j2' : 'rayas-j1';
+
+        for (let i = 0; i < longitudJuego; i++) {
+            if (intentoStr[i] === codigoAComparar[i]) {
+                if (arrayDestino[i] === '') indexAnimado = i; 
+                arrayDestino[i] = intentoStr[i]; aciertos++;
             }
         }
-        
-        // Luego buscar desordenados (amarillos)
-        for(let i=0; i<lenCodigo; i++){
-            if(intArr[i] !== null){
-                let pos = secArr.indexOf(intArr[i]);
-                if(pos !== -1){
-                    desordenados++;
-                    secArr[pos] = null; // Marcar como usado
-                }
-            }
+        dibujarSlots(idContenedor, arrayDestino, indexAnimado); 
+
+        let claseColor = esJ1 ? "turno-j1" : "turno-j2";
+        let nombre = (quienHizoElIntento === miRol) ? "Tú: " : nombreRival + ": ";
+        let emojiAciertos = aciertos > 0 ? "🟢".repeat(aciertos) : "❌";
+        let mensaje = `<b>${nombre}</b> ${intentoStr} ➔ ${emojiAciertos}`;
+
+        let gano = !arrayDestino.includes('');
+
+        if (gano) {
+            mensaje += " ¡CÓDIGO DESCUBIERTO! 🏆"; agregarAlHistorial(mensaje, claseColor);
+            finalizarJuego(quienHizoElIntento);
+            guardarEstado(); 
+            return; 
         }
-        
-        return { exactos, desordenados };
+
+        agregarAlHistorial(mensaje, claseColor);
+        turnoActual = (turnoActual === 1) ? 2 : 1;
+        actualizarTurnoUI();
+        guardarEstado();
     }
 
-    function intentarAdivinar() { 
-        let input = document.getElementById('input-adivinar');
-        let intento = input.value.trim();
-        
-        if(intento.length !== lenCodigo) {
-            playSound('error'); vibrate('error'); return;
-        }
-        
-        input.value = "";
-        let res = evaluarIntento(intento, codigoRival);
-        let win = (res.exactos === lenCodigo);
-        
-        misIntentos.push({ numero: intento, exactos: res.exactos, desordenados: res.desordenados });
-        
-        dibujarHistorial();
-        
-        if(win) {
-            playSound('win'); confetti({particleCount:150, spread:70});
-            conn.send({tipo:'GUESS', intento:intento, win: true});
-            terminarJuego(miNombre, `¡Descifraste el código en ${misIntentos.length} intentos!`);
+    function finalizarJuego(ganador) {
+        document.getElementById('intento').disabled = true; document.getElementById('btn-adivinar').disabled = true;
+        document.getElementById('zona-revancha').classList.remove('oculto'); reproducirSonido('ganar');
+
+        if (ganador === miRol) {
+            document.getElementById('titulo-turno').innerText = "¡GANASTE! 🎉"; document.getElementById('titulo-turno').style.color = "var(--p1-color)";
+            confetti({ particleCount: 150, spread: 80, origin: { y: 0.6 } }); 
         } else {
-            playSound('acierto');
-            turnoActual = (turnoActual === 1 ? 2 : 1);
-            conn.send({tipo:'GUESS', intento:intento, win: false});
-            updateUI();
+            document.getElementById('titulo-turno').innerText = "Ganó " + nombreRival + " 😔"; document.getElementById('titulo-turno').style.color = "var(--p2-color)";
+            agregarAlHistorial(`Tu código era: ${miSecreto}`, "mensaje-sistema");
         }
     }
 
-    function procesarIntentoRival(intento, win) {
-        intentosRival++;
-        document.getElementById('estado-rival').innerText = `Intentos: ${intentosRival} (Último: ${intento})`;
-        
-        if(win) {
-            playSound('lose'); vibrate('lose');
-            terminarJuego(nombreRival, `${nombreRival} descifró tu código en ${intentosRival} intentos.`);
+    function agregarAlHistorial(texto, clase) {
+        let historial = document.getElementById('historial'); let parrafo = document.createElement('div');
+        parrafo.className = clase; parrafo.style.margin = "8px 0"; parrafo.innerHTML = texto; historial.appendChild(parrafo);
+        historial.scrollTop = historial.scrollHeight;
+    }
+
+    function solicitarRevancha() {
+        localStorage.removeItem('adivinaCodigoGuardado');
+        conn.send({ tipo: 'REMATCH_REQ' });
+        prepararRevancha();
+        if(miRol === 1) hostEsperarJugador(); 
+    }
+
+    function prepararRevancha() {
+        document.getElementById('pantalla-juego').classList.add('oculto'); document.getElementById('historial').innerHTML = '';
+        if (miRol === 1) {
+            document.getElementById('pantalla-host').classList.remove('oculto'); document.getElementById('host-secreto').value = "";
+            document.getElementById('btn-esperar').innerText = "Esperando nueva ronda..."; document.getElementById('btn-esperar').disabled = false; document.getElementById('btn-esperar').style.backgroundColor = "var(--btn-bg)"; document.getElementById('btn-esperar').style.color = "white";
         } else {
-            turnoActual = miRol;
-            updateUI();
+            document.getElementById('pantalla-guest').classList.remove('oculto'); document.getElementById('guest-secreto').value = "";
+            document.getElementById('guest-paso2').innerHTML = `<p style="color: var(--p2-color); font-weight: 800; font-size: 18px;">¡Revancha aceptada!</p><label style="font-weight: 600;">Tu NUEVO Código Secreto:</label><br><input type="text" inputmode="numeric" pattern="[0-9]*" id="guest-secreto" placeholder="Tus números" autocomplete="off" style="letter-spacing: 3px; font-weight: 800;"><p id="error-guest-juego" class="alerta"></p><button onclick="guestEnviarSecreto()" style="background-color: var(--p2-color);">¡Listo para Jugar!</button>`;
         }
     }
-
-    function dibujarHistorial() {
-        let h = "";
-        misIntentos.forEach((item, index) => {
-            h += `
-            <div class="fila-intento fade-in">
-                <span class="numero-intento">${item.numero}</span>
-                <div class="pistas-caja">
-                    ${item.exactos > 0 ? `<span class="pista-badge pista-verde">${item.exactos} ✅</span>` : ''}
-                    ${item.desordenados > 0 ? `<span class="pista-badge pista-amarilla">${item.desordenados} 🔄</span>` : ''}
-                    ${(item.exactos === 0 && item.desordenados === 0) ? `<span style="font-size:12px; font-weight:800; color:var(--text-muted);">NADA ❌</span>` : ''}
-                </div>
-            </div>`;
-        });
-        let caja = document.getElementById('historial-intentos');
-        caja.innerHTML = h;
-        caja.scrollTop = caja.scrollHeight;
-    }
-
-    function terminarJuego(ganador, msj) {
-        enJuegoActivo = false; turnoActual = 0; 
-        document.getElementById('zona-revancha').classList.remove('oculto');
-        document.getElementById('panel-juego').classList.add('oculto');
-        
-        const tit = document.getElementById('titulo-turno'); 
-        const marc = document.getElementById('caja-marcador');
-        
-        if(ganador === miNombre){ 
-            tit.innerText="¡CÓDIGO DESCIFRADO! 🎉"; 
-            marc.className = "marcador";
-        } else { 
-            tit.innerText=`¡TUS DEFENSAS CAYERON! 💀`; 
-            marc.className = "marcador rival";
-        }
-        document.getElementById('subtitulo-turno').innerText = msj; 
-    }
-
-    function solicitarRevancha() { conn.send({tipo:'REMATCH_REQ'}); prepararRevancha(); }
-    function prepararRevancha() { 
-        enJuegoActivo=false; 
-        document.querySelectorAll('.tarjeta, #pantalla-juego').forEach(e=>e.classList.add('oculto')); 
-        
-        if(miRol===1){ 
-            document.getElementById('pantalla-host').classList.remove('oculto'); 
-            document.getElementById('host-paso1').classList.remove('oculto'); 
-            document.getElementById('host-paso2').classList.add('oculto'); 
-            document.getElementById('host-secreto').value = "";
-        } else { 
-            document.getElementById('pantalla-guest').classList.remove('oculto'); 
-            document.getElementById('guest-paso1').classList.remove('oculto'); 
-            document.getElementById('guest-paso2').classList.add('oculto'); 
-            document.getElementById('guest-codigo').value=""; 
-            document.getElementById('guest-secreto').value = "";
-        } 
-    }
-    
-    try { history.replaceState({p:'inicio'}, "", ""); } catch(e){}
-    window.addEventListener('popstate', (e) => {
-        if (enJuegoActivo && turnoActual !== 0) {
-            if (confirm("⚠️ ¿Abandonar partida?")) { volverAlInicio(); } 
-            else { try { history.pushState({p:'juego'}, "", "#juego"); } catch(err){} }
-        } 
-        else {
-            volverAlInicio();
-        }
-    });
 </script>
 
+<script>
+    if ('serviceWorker' in navigator) { window.addEventListener('load', function() { navigator.serviceWorker.register('./sw.js'); }); }
+</script>
 </body>
 </html>
