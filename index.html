@@ -19,15 +19,15 @@
     <style>
         :root {
             /* Paleta extraída de la imagen */
-            --bg-body: #f0f9ff;       /* Celeste muy clarito para el fondo */
+            --bg-body: #f0f9ff;       
             --bg-card: #ffffff;
             --text-main: #0f172a;
             --text-muted: #64748b;
-            --p1-color: #2dd4bf;      /* Turquesa/Cyan del globo superior */
-            --p2-color: #f43f5e;      /* Rojo/Coral del globo izquierdo */
-            --btn-bg: #0ea5e9;        /* Azul brillante del fondo del ícono */
+            --p1-color: #2dd4bf;      
+            --p2-color: #f43f5e;      
+            --btn-bg: #0ea5e9;        
             --btn-hover: #0284c7;
-            --accent-yellow: #fbbf24; /* Amarillo del globo derecho */
+            --accent-yellow: #fbbf24; 
             --border-color: #e0f2fe;
             --shadow-app: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         }
@@ -45,7 +45,6 @@
         
         .contenedor-principal { max-width: 800px; margin: 0 auto; }
         
-        /* Título inspirado en el gran número 7 blanco */
         h1 { 
             display: inline-block;
             background: var(--btn-bg);
@@ -62,7 +61,6 @@
         
         h2, h3 { font-weight: 600; margin-top: 0; margin-bottom: 10px; }
         
-        /* Tarjetas con bordes más redondeados tipo app */
         .tarjeta { 
             background: var(--bg-card); 
             padding: 30px 25px; 
@@ -92,7 +90,6 @@
             overflow: hidden;
         }
         
-        /* Líneas de color más gruesas para identificar jugadores */
         .panel-jugador.j1 { border-top: 6px solid var(--p1-color); }
         .panel-jugador.j2 { border-top: 6px solid var(--p2-color); }
         .panel-jugador h3 { font-size: 16px; margin-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 800; }
@@ -109,7 +106,6 @@
 
         .contenedor-rayas { display: flex; gap: 6px; justify-content: center; margin-top: 10px; flex-wrap: wrap; }
         
-        /* Cajas de los números más suaves */
         .slot-box { 
             width: 26px; 
             height: 36px; 
@@ -125,7 +121,6 @@
             color: var(--btn-bg);
         }
         
-        /* Animación POP con los nuevos colores */
         @keyframes pop {
             0% { transform: scale(1); background-color: var(--accent-yellow); border-color: var(--accent-yellow); color: white;}
             50% { transform: scale(1.3); background-color: var(--p1-color); border-color: var(--p1-color); color: white;}
@@ -155,7 +150,6 @@
         .checkbox-container { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 10px; font-size: 14px; color: var(--text-muted); font-weight: 500;}
         .checkbox-container input { width: auto; margin: 0; cursor: pointer; transform: scale(1.2); accent-color: var(--btn-bg);}
 
-        /* Botones estilo píldora (pill-shaped) */
         button { 
             background-color: var(--btn-bg); 
             color: white; 
@@ -189,8 +183,8 @@
             border: 2px solid var(--border-color); 
         }
         .mensaje-sistema { color: var(--text-muted); font-style: italic; text-align: center; margin: 10px 0; font-size: 13px;}
-        .turno-j1 { color: #0d9488; font-weight: 600; } /* Tono más oscuro del cyan para legibilidad */
-        .turno-j2 { color: #e11d48; font-weight: 600; } /* Tono más oscuro del coral para legibilidad */
+        .turno-j1 { color: #0d9488; font-weight: 600; } 
+        .turno-j2 { color: #e11d48; font-weight: 600; } 
         .alerta { color: #e11d48; font-size: 14px; font-weight: 600; margin-bottom: 10px; min-height: 20px;}
         
         .codigo-sala { 
@@ -310,14 +304,12 @@
 </div>
 
 <script>
-    // PREVENIR CIERRES ACCIDENTALES
     window.addEventListener('beforeunload', function (e) {
         if (miRol !== 0 && document.getElementById('pantalla-juego').classList.contains('oculto') === false) {
             e.preventDefault(); e.returnValue = '';
         }
     });
 
-    // MOSTRAR BOTÓN DE RECUPERAR SI HAY PARTIDA GUARDADA
     window.addEventListener('load', function() {
         if(localStorage.getItem('adivinaCodigoGuardado')) {
             document.getElementById('btn-recuperar').classList.remove('oculto');
@@ -330,7 +322,6 @@
     let longitudJuego = 4; let turnoActual = 1; let reglaUnicos = true;
     let descubiertoJ1 = []; let descubiertoJ2 = [];
 
-    // --- SISTEMA DE SONIDO ---
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     let audioCtx;
     function reproducirSonido(tipo) {
@@ -346,7 +337,6 @@
         } catch(e) {}
     }
 
-    // --- AUTO-GUARDADO ---
     function guardarEstado() {
         if(miRol === 0 || secretoRival === "") return;
         let estado = {
@@ -364,7 +354,6 @@
         location.reload();
     }
 
-    // --- LÓGICA DE RECUPERACIÓN DE PARTIDA ---
     function recuperarPartida() {
         let estado = JSON.parse(localStorage.getItem('adivinaCodigoGuardado'));
         
@@ -521,6 +510,7 @@
         conn.send({ tipo: 'GUESS', intento: intento });
     }
 
+    // AQUÍ ESTÁ LA MAGIA DE LA PRIVACIDAD EN EL HISTORIAL
     function procesarIntento(intentoStr, quienHizoElIntento) {
         let aciertos = 0; let indexAnimado = -1;
         let codigoAComparar = (quienHizoElIntento === miRol) ? secretoRival : miSecreto;
@@ -536,21 +526,26 @@
         }
         dibujarSlots(idContenedor, arrayDestino, indexAnimado); 
 
-        let claseColor = esJ1 ? "turno-j1" : "turno-j2";
-        let nombre = (quienHizoElIntento === miRol) ? "Tú: " : nombreRival + ": ";
-        let emojiAciertos = aciertos > 0 ? "🟢".repeat(aciertos) : "❌";
-        let mensaje = `<b>${nombre}</b> ${intentoStr} ➔ ${emojiAciertos}`;
-
         let gano = !arrayDestino.includes('');
 
+        // Solo se agrega al historial si el intento lo hizo el jugador de esta pantalla
+        if (quienHizoElIntento === miRol) {
+            let emojiAciertos = aciertos > 0 ? "🟢".repeat(aciertos) : "❌";
+            let claseColor = miRol === 1 ? "turno-j1" : "turno-j2"; 
+            let mensaje = `<b>Tu intento:</b> ${intentoStr} ➔ ${emojiAciertos}`;
+            
+            if (gano) {
+                mensaje += " ¡CÓDIGO DESCUBIERTO! 🏆"; 
+            }
+            agregarAlHistorial(mensaje, claseColor);
+        }
+
         if (gano) {
-            mensaje += " ¡CÓDIGO DESCUBIERTO! 🏆"; agregarAlHistorial(mensaje, claseColor);
             finalizarJuego(quienHizoElIntento);
             guardarEstado(); 
             return; 
         }
 
-        agregarAlHistorial(mensaje, claseColor);
         turnoActual = (turnoActual === 1) ? 2 : 1;
         actualizarTurnoUI();
         guardarEstado();
